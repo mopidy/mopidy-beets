@@ -2,7 +2,7 @@ Mopidy-Beets
 =================
 
 Mopidy http://www.mopidy.com/ extension for playing music from
-Beets http://www.beets.com
+Beets http://beets.radbox.org/ via beets web extension.
 
 Usage
 -----
