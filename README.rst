@@ -1,38 +1,34 @@
 Mopidy-Beets
-=================
+============
 
-Mopidy http://www.mopidy.com/ extension for playing music from
-Beets http://beets.radbox.org/ via beets web extension.
+`Mopidy <http://www.mopidy.com/>`_ extension for playing music from
+`Beets <http://beets.radbox.org/>`_ via Beets' web extension.
 
 Usage
 -----
 
-Install by running::
+#. Setup the `Beets web plugin
+   <http://beets.readthedocs.org/en/latest/plugins/web.html>`_.
+
+#. Install the Mopidy-Beets extension by running::
 
     sudo pip install mopidy-beets
 
-
-Setup your beets host
+#. Tell Mopidy where to find the Beets web interface by adding the following to
+   your ``mopidy.conf``::
 
     [beets]
     host = "http://yourserver:port"
 
+#. Restart Mopidy.
+
+#. Searches in Mopidy will now return results from your Beets library.
 
 
 Project resources
 -----------------
 
-- Source code https://github.com/dz0ny/mopidy-beets_
-- Issue tracker https://github.com/mopidy/mopidy-beets/issues
-- Download development snapshot https://github.com/dz0ny/mopidy-beets/tarball/develop#egg=mopidy-beets-dev
-
-License 
--------
-
-Copyright (C) 2013 <dz0ny at shortmail dot com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+- `Source code <https://github.com/dz0ny/mopidy-beets>`_
+- `Issue tracker <https://github.com/mopidy/mopidy-beets/issues>`_
+- `Download development snapshot
+  <https://github.com/dz0ny/mopidy-beets/tarball/develop#egg=mopidy-beets-dev>`_
