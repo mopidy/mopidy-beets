@@ -15,7 +15,11 @@ class BeetsBackend(pykka.ThreadingActor, base.Backend):
 
     def __init__(self, config, audio):
         super(BeetsBackend, self).__init__()
-        self.beets_api = BeetsRemoteClient(config['beets']['hostname'])
+
+        beets_endpoint = 'http://%s:%s' % (
+            config['beets']['hostname'], config['beets']['port'])
+
+        self.beets_api = BeetsRemoteClient(beets_endpoint)
         self.library = BeetsLibraryProvider(backend=self)
         self.playback = BeetsPlaybackProvider(audio=audio, backend=self)
         self.playlists = None

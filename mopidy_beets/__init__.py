@@ -42,12 +42,9 @@ class BeetsExtension(ext.Extension):
 
     def get_config_schema(self):
         schema = super(BeetsExtension, self).get_config_schema()
-        schema['hostname'] = config.String()
+        schema['hostname'] = config.Hostname()
+        schema['port'] = config.Port()
         return schema
-
-    def validate_config(self, config):
-        if not config.getboolean('beets', 'enabled'):
-            return
 
     def validate_environment(self):
         try:
