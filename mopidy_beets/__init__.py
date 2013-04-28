@@ -21,13 +21,9 @@ https://github.com/dz0ny/mopidy-beets/issues
 
 requests
 
-**Default config**
-
-.. code-block:: ini
-
 """
 
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 
 class BeetsExtension(ext.Extension):
