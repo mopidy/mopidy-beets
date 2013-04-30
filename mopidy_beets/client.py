@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import logging
 import requests
 import time
+import urllib
 
 from requests.exceptions import RequestException
 from mopidy.models import Track, Album, Artist
@@ -75,7 +76,8 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_item_by(self, name):
-        res = self._get('/item/query/%s' % name).get('results')
+        res = self._get('/item/query/%s' %
+                        urllib.quote(name)).get('results')
         try:
             return self._parse_query(res)
         except Exception:
@@ -83,7 +85,8 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_album_by(self, name):
-        res = self._get('/album/query/%s' % name).get('results')
+        res = self._get('/album/query/%s' %
+                        urllib.quote(name)).get('results')
         try:
             return self._parse_query(res[0]['items'])
         except Exception:

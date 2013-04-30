@@ -9,6 +9,7 @@ logger = logging.getLogger('mopidy.backends.beets')
 
 
 class BeetsLibraryProvider(base.BaseLibraryProvider):
+
     def __init__(self, *args, **kwargs):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
         self.remote = self.backend.beets_api
@@ -17,9 +18,10 @@ class BeetsLibraryProvider(base.BaseLibraryProvider):
             return self.search(query=query, uris=uris)
 
     def search(self, query=None, uris=None):
+        logger.debug('Query "%s":' % query)
         if not self.remote.has_connection:
             return []
-            
+
         if not query:
             # Fetch all data(browse library)
             return SearchResult(
@@ -27,32 +29,34 @@ class BeetsLibraryProvider(base.BaseLibraryProvider):
                 tracks=self.remote.get_tracks())
 
         self._validate_query(query)
+        if 'any' in query:
+            return SearchResult(
+                uri='beets:search-any',
+                tracks=self.remote.get_item_by(query['any'][0]) or [])
+        else:
+            search = []
+            for (field, val) in query.iteritems():
 
-        for (field, val) in query.iteritems():
-            if field == "album":
-                return SearchResult(
-                    uri='beets:search',
-                    tracks=self.remote.get_album_by(val[0]) or [])
-            elif field == "artist":
-                return SearchResult(
-                    uri='beets:search',
-                    tracks=self.remote.get_item_by(val[0]) or [])
-            elif field == "any":
-                return SearchResult(
-                    uri='beets:search',
-                    tracks=self.remote.get_item_by(val[0]) or [])
-            else:
-                raise LookupError('Invalid lookup field: %s' % field)
-
-        return []
+                if field == "album":
+                    search.append(val[0])
+                if field == "artist":
+                    search.append(val[0])
+                if field == "track":
+                    search.append(val[0])
+                if field == "date":
+                    search.append(val[0])
+            logger.debug('Search query "%s":' % search)
+            return SearchResult(
+                uri='beets:search-' + '-'.join(search),
+                tracks=self.remote.get_item_by('/'.join(search)) or [])
 
     def lookup(self, uri):
         try:
             id = uri.split(";")[1]
-            logger.debug(u'Beets track id for "%s": %s', id, uri)
+            logger.debug('Beets track id for "%s": %s' % (id, uri))
             return [self.remote.get_track(id, True)]
         except Exception as error:
-            logger.debug(u'Failed to lookup "%s": %s', uri, error)
+            logger.debug('Failed to lookup "%s": %s' % (uri, error))
             return []
 
     def _validate_query(self, query):
