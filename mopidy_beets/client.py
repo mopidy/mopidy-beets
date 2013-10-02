@@ -76,8 +76,10 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_item_by(self, name):
+        if isinstance(name, unicode):
+            name = name.encode('utf-8')
         res = self._get('/item/query/%s' %
-                        urllib.quote(unicode(name).encode('utf-8'))).get('results')
+                        urllib.quote(name)).get('results')
         try:
             return self._parse_query(res)
         except Exception:
@@ -85,8 +87,10 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_album_by(self, name):
+        if isinstance(name, unicode):
+            name = name.encode('utf-8')
         res = self._get('/album/query/%s' %
-                        urllib.quote(unicode(name).encode('utf-8'))).get('results')
+                        urllib.quote(name)).get('results')
         try:
             return self._parse_query(res[0]['items'])
         except Exception:
