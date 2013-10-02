@@ -76,6 +76,8 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_item_by(self, name):
+        if isinstance(name, unicode):
+            name = name.encode('utf-8')
         res = self._get('/item/query/%s' %
                         urllib.quote(name)).get('results')
         try:
@@ -85,6 +87,8 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_album_by(self, name):
+        if isinstance(name, unicode):
+            name = name.encode('utf-8')
         res = self._get('/album/query/%s' %
                         urllib.quote(name)).get('results')
         try:
