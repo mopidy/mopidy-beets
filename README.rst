@@ -29,7 +29,7 @@ Usage
 Project resources
 -----------------
 
-- `Source code <https://github.com/dz0ny/mopidy-beets>`_
+- `Source code <https://github.com/mopidy/mopidy-beets>`_
 - `Issue tracker <https://github.com/mopidy/mopidy-beets/issues>`_
 - `Download development snapshot
-  <https://github.com/dz0ny/mopidy-beets/tarball/develop#egg=mopidy-beets-dev>`_
+  <https://github.com/mopidy/mopidy-beets/tarball/master#egg=Mopidy-Beets-dev>`_

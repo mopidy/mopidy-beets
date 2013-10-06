@@ -14,7 +14,7 @@ def get_version(filename):
 setup(
     name='Mopidy-Beets',
     version=get_version('mopidy_beets/__init__.py'),
-    url='http://github.com/dz0ny/mopidy-beets/',
+    url='https://github.com/mopidy/mopidy-beets',
     license='MIT',
     author='dz0ny',
     author_email='dz0ny@shortmail.com',
