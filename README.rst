@@ -63,7 +63,7 @@ Project resources
 Changelog
 =========
 
-v1.0.3 (UNRELEASED)
+v1.0.3 (2013-11-02)
 -------------------
 
 - Properly encode search queries containing non-ASCII chars.

@@ -6,7 +6,7 @@ from mopidy import ext, config
 from mopidy.exceptions import ExtensionError
 
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 
 class BeetsExtension(ext.Extension):
