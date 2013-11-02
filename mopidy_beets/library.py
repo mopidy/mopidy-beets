@@ -5,7 +5,7 @@ import logging
 from mopidy.backends import base
 from mopidy.models import SearchResult
 
-logger = logging.getLogger('mopidy.backends.beets')
+logger = logging.getLogger('mopidy_beets')
 
 
 class BeetsLibraryProvider(base.BaseLibraryProvider):
