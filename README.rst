@@ -63,4 +63,21 @@ Project resources
 Changelog
 =========
 
-TODO: Write one
+v1.0.3 (UNRELEASED)
+-------------------
+
+- Properly encode search queries containing non-ASCII chars.
+
+- Rename logger to ``mopidy_beets``.
+
+
+v1.0.2 (2013-04-30)
+-------------------
+
+- Fix search.
+
+
+v1.0.1 (2013-04-28)
+-------------------
+
+- Initial release.
