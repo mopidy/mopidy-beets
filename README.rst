@@ -63,6 +63,13 @@ Project resources
 Changelog
 =========
 
+
+v1.0.4 (UNRELEASED)
+-------------------
+
+- Require Requests >= 1.0, as 0.x does not seem to be enough. (Fixes: #7)
+
+
 v1.0.3 (2013-11-02)
 -------------------
 
