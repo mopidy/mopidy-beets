@@ -64,7 +64,7 @@ Changelog
 =========
 
 
-v1.0.4 (UNRELEASED)
+v1.0.4 (2013-12-15)
 -------------------
 
 - Require Requests >= 1.0, as 0.x does not seem to be enough. (Fixes: #7)
