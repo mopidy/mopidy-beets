@@ -119,8 +119,6 @@ class BeetsRemoteClient(object):
     def _convert_json_data(self, data, remote_url=False):
         if not data:
             return
-        # NOTE kwargs dict keys must be bytestrings to work on Python < 2.6.5
-        # See https://github.com/mopidy/mopidy/issues/302 for details.
 
         track_kwargs = {}
         album_kwargs = {}
@@ -128,63 +126,63 @@ class BeetsRemoteClient(object):
         albumartist_kwargs = {}
 
         if 'track' in data:
-            track_kwargs[b'track_no'] = int(data['track'])
+            track_kwargs['track_no'] = int(data['track'])
 
         if 'tracktotal' in data:
-            album_kwargs[b'num_tracks'] = int(data['tracktotal'])
+            album_kwargs['num_tracks'] = int(data['tracktotal'])
 
         if 'artist' in data:
-            artist_kwargs[b'name'] = data['artist']
-            albumartist_kwargs[b'name'] = data['artist']
+            artist_kwargs['name'] = data['artist']
+            albumartist_kwargs['name'] = data['artist']
 
         if 'albumartist' in data:
-            albumartist_kwargs[b'name'] = data['albumartist']
+            albumartist_kwargs['name'] = data['albumartist']
 
         if 'album' in data:
-            album_kwargs[b'name'] = data['album']
+            album_kwargs['name'] = data['album']
 
         if 'title' in data:
-            track_kwargs[b'name'] = data['title']
+            track_kwargs['name'] = data['title']
 
         if 'date' in data:
-            track_kwargs[b'date'] = data['date']
+            track_kwargs['date'] = data['date']
 
         if 'mb_trackid' in data:
-            track_kwargs[b'musicbrainz_id'] = data['mb_trackid']
+            track_kwargs['musicbrainz_id'] = data['mb_trackid']
 
         if 'mb_albumid' in data:
-            album_kwargs[b'musicbrainz_id'] = data['mb_albumid']
+            album_kwargs['musicbrainz_id'] = data['mb_albumid']
 
         if 'mb_artistid' in data:
-            artist_kwargs[b'musicbrainz_id'] = data['mb_artistid']
+            artist_kwargs['musicbrainz_id'] = data['mb_artistid']
 
         if 'mb_albumartistid' in data:
-            albumartist_kwargs[b'musicbrainz_id'] = (
+            albumartist_kwargs['musicbrainz_id'] = (
                 data['mb_albumartistid'])
 
         if 'album_id' in data:
             album_art_url = '%s/album/%s/art' % (
                 self.api_endpoint, data['album_id'])
-            album_kwargs[b'images'] = [album_art_url]
+            album_kwargs['images'] = [album_art_url]
 
         if artist_kwargs:
             artist = Artist(**artist_kwargs)
-            track_kwargs[b'artists'] = [artist]
+            track_kwargs['artists'] = [artist]
 
         if albumartist_kwargs:
             albumartist = Artist(**albumartist_kwargs)
-            album_kwargs[b'artists'] = [albumartist]
+            album_kwargs['artists'] = [albumartist]
 
         if album_kwargs:
             album = Album(**album_kwargs)
-            track_kwargs[b'album'] = album
+            track_kwargs['album'] = album
 
         if remote_url:
-            track_kwargs[b'uri'] = '%s/item/%s/file' % (
+            track_kwargs['uri'] = '%s/item/%s/file' % (
                 self.api_endpoint, data['id'])
         else:
-            track_kwargs[b'uri'] = 'beets:track;%s' % data['id']
-        track_kwargs[b'length'] = int(data.get('length', 0)) * 1000
+            track_kwargs['uri'] = 'beets:track;%s' % data['id']
+        track_kwargs['length'] = int(data.get('length', 0)) * 1000
 
         track = Track(**track_kwargs)
 

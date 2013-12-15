@@ -69,6 +69,8 @@ v1.0.4 (UNRELEASED)
 
 - Require Requests >= 1.0, as 0.x does not seem to be enough. (Fixes: #7)
 
+- Remove hacks for Python 2.6 compatibility.
+
 
 v1.0.3 (2013-11-02)
 -------------------
