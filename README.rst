@@ -71,6 +71,9 @@ v1.0.4 (UNRELEASED)
 
 - Remove hacks for Python 2.6 compatibility.
 
+- Change search field ``track`` to ``track_name`` for compatibility with
+  Mopidy 0.17. (Fixes: mopidy/mopidy#610)
+
 
 v1.0.3 (2013-11-02)
 -------------------

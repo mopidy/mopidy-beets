@@ -36,12 +36,11 @@ class BeetsLibraryProvider(base.BaseLibraryProvider):
         else:
             search = []
             for (field, val) in query.iteritems():
-
                 if field == "album":
                     search.append(val[0])
                 if field == "artist":
                     search.append(val[0])
-                if field == "track":
+                if field == "track_name":
                     search.append(val[0])
                 if field == "date":
                     search.append(val[0])
