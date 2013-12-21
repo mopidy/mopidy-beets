@@ -3,11 +3,11 @@ Mopidy-Beets
 ************
 
 .. image:: https://pypip.in/v/Mopidy-Beets/badge.png
-    :target: https://crate.io/packages/Mopidy-Beets/
+    :target: https://pypi.python.org/pypi/Mopidy-Beets/
     :alt: Latest PyPI version
 
 .. image:: https://pypip.in/d/Mopidy-Beets/badge.png
-    :target: https://crate.io/packages/Mopidy-Beets/
+    :target: https://pypi.python.org/pypi/Mopidy-Beets/
     :alt: Number of PyPI downloads
 
 .. image:: https://travis-ci.org/mopidy/mopidy-beets.png?branch=master
