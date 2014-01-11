@@ -17,11 +17,7 @@ Mopidy-Beets
 .. image:: https://coveralls.io/repos/mopidy/mopidy-beets/badge.png?branch=master
    :target: https://coveralls.io/r/mopidy/mopidy-beets?branch=master
    :alt: Test coverage
-   
-.. image:: https://sourcegraph.com/api/repos/github.com/mopidy/mopidy-beets/counters/views.png
-   :alt: Total views
-   :target: https://sourcegraph.com/github.com/mopidy/mopidy-beets
- 
+
 `Mopidy <http://www.mopidy.com/>`_ extension for playing music from
 `Beets <http://beets.radbox.org/>`_ via Beets' web extension.
 
