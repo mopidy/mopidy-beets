@@ -24,6 +24,6 @@ class BeetsExtension(ext.Extension):
         schema['port'] = config.Port()
         return schema
 
-    def get_backend_classes(self):
+    def setup(self, registry):
         from .actor import BeetsBackend
-        return [BeetsBackend]
+        registry.add('backend', BeetsBackend)
