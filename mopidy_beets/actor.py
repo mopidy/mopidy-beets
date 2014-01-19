@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import logging
 import pykka
 
-from mopidy.backends import base
+from mopidy import backend
 
 from .library import BeetsLibraryProvider
 from .client import BeetsRemoteClient
@@ -11,7 +11,7 @@ from .client import BeetsRemoteClient
 logger = logging.getLogger('mopidy_beets')
 
 
-class BeetsBackend(pykka.ThreadingActor, base.Backend):
+class BeetsBackend(pykka.ThreadingActor, backend.Backend):
 
     def __init__(self, config, audio):
         super(BeetsBackend, self).__init__()
@@ -27,7 +27,7 @@ class BeetsBackend(pykka.ThreadingActor, base.Backend):
         self.uri_schemes = ['beets']
 
 
-class BeetsPlaybackProvider(base.BasePlaybackProvider):
+class BeetsPlaybackProvider(backend.PlaybackProvider):
 
     def play(self, track):
         id = track.uri.split(';')[1]

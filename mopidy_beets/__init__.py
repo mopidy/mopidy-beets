@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import os
 
 from mopidy import ext, config
-from mopidy.exceptions import ExtensionError
 
 
 __version__ = '1.0.4'
@@ -25,12 +24,6 @@ class BeetsExtension(ext.Extension):
         schema['port'] = config.Port()
         return schema
 
-    def validate_environment(self):
-        try:
-            import requests  # noqa
-        except ImportError as e:
-            raise ExtensionError('Library requests not found', e)
-
-    def get_backend_classes(self):
+    def setup(self, registry):
         from .actor import BeetsBackend
-        return [BeetsBackend]
+        registry.add('backend', BeetsBackend)

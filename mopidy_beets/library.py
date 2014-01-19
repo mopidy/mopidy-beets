@@ -2,13 +2,13 @@ from __future__ import unicode_literals
 
 import logging
 
-from mopidy.backends import base
+from mopidy import backend
 from mopidy.models import SearchResult
 
 logger = logging.getLogger('mopidy_beets')
 
 
-class BeetsLibraryProvider(base.BaseLibraryProvider):
+class BeetsLibraryProvider(backend.LibraryProvider):
 
     def __init__(self, *args, **kwargs):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)

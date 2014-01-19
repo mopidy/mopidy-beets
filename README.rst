@@ -63,6 +63,11 @@ Project resources
 Changelog
 =========
 
+v1.0.5 (UNRELEASED)
+-------------------
+
+- Updated extension and backend APIs to match Mopidy 0.18.
+
 
 v1.0.4 (2013-12-15)
 -------------------
