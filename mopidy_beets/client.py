@@ -8,7 +8,7 @@ import urllib
 from requests.exceptions import RequestException
 from mopidy.models import Track, Album, Artist
 
-logger = logging.getLogger('mopidy_beets.client')
+logger = logging.getLogger(__name__)
 
 
 class cache(object):

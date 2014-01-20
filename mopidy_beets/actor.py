@@ -8,7 +8,7 @@ from mopidy import backend
 from .library import BeetsLibraryProvider
 from .client import BeetsRemoteClient
 
-logger = logging.getLogger('mopidy_beets')
+logger = logging.getLogger(__name__)
 
 
 class BeetsBackend(pykka.ThreadingActor, backend.Backend):
