@@ -5,7 +5,7 @@ import os
 from mopidy import ext, config
 
 
-__version__ = '1.0.4'
+__version__ = '1.1.0'
 
 
 class BeetsExtension(ext.Extension):

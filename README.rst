@@ -63,8 +63,10 @@ Project resources
 Changelog
 =========
 
-v1.0.5 (UNRELEASED)
+v1.1.0 (2014-01-20)
 -------------------
+
+- Reuqire Requests >= 2.0.
 
 - Updated extension and backend APIs to match Mopidy 0.18.
 
