@@ -61,6 +61,12 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_tracks(self):
+        res = self._get('/item/?embedded').get('items')
+        try:
+            return self._parse_query(res)
+        except Exception:
+            return False
+
         track_ids = self._get('/item/').get('item_ids')
         tracks = []
         for track_id in track_ids:
