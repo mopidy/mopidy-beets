@@ -67,12 +67,6 @@ class BeetsRemoteClient(object):
         except Exception:
             return False
 
-        track_ids = self._get('/item/').get('item_ids')
-        tracks = []
-        for track_id in track_ids:
-            tracks.append(self.get_track(track_id))
-        return tracks
-
     @cache(ctl=16)
     def get_track(self, id, remote_url=False):
         return self._convert_json_data(self._get('/item/%s' % id), remote_url)
