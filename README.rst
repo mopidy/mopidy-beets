@@ -50,12 +50,13 @@ Configuration
 
 #. Searches in Mopidy will now return results from your Beets library.
 
+
 Usage
 =====
 
-#. Run ``beet web`` in an open terminal window to start the beets web interface.
+#. Run ``beet web`` to start the Beets web interface.
 
-#. Open another terminal window, start mopidy, and search/browse your beets library.
+#. Start Mopidy, and search or browse your Beets library with any Mopidy client.
 
 
 Project resources
