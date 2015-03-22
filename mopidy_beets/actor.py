@@ -31,8 +31,9 @@ class BeetsBackend(pykka.ThreadingActor, backend.Backend):
 
 class BeetsPlaybackProvider(backend.PlaybackProvider):
 
-    def play(self, track):
-        id = track.uri.split(';')[1]
-        logger.info('Getting info for track %s with id %s' % (track.uri, id))
-        track = self.backend.beets_api.get_track(id, True)
+    def change_track(self, track):
+        track_id = track.uri.split(';')[1]
+        logger.debug(
+            'Getting info for track %s with id %s' % (track.uri, track_id))
+        track = self.backend.beets_api.get_track(track_id, True)
         return super(BeetsPlaybackProvider, self).play(track)
