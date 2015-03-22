@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
 import logging
-import requests
 import time
 import urllib
 
+from mopidy.models import Album, Artist, Track
+
+import requests
 from requests.exceptions import RequestException
-from mopidy.models import Track, Album, Artist
+
 
 logger = logging.getLogger(__name__)
 

@@ -5,6 +5,7 @@ import logging
 from mopidy import backend
 from mopidy.models import SearchResult
 
+
 logger = logging.getLogger(__name__)
 
 

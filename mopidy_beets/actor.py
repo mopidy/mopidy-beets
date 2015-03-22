@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
 import logging
-import pykka
 
 from mopidy import backend
 
-from .library import BeetsLibraryProvider
+import pykka
+
 from .client import BeetsRemoteClient
+from .library import BeetsLibraryProvider
+
 
 logger = logging.getLogger(__name__)
 
