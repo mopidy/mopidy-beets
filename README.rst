@@ -10,7 +10,7 @@ Mopidy-Beets
     :target: https://pypi.python.org/pypi/Mopidy-Beets/
     :alt: Number of PyPI downloads
 
-.. image:: https://img.shields.io/travis/mopidy/mopidy-beets/master.png?style=flat
+.. image:: https://img.shields.io/travis/mopidy/mopidy-beets/master.svg?style=flat
     :target: https://travis-ci.org/mopidy/mopidy-beets
     :alt: Travis CI build status
 
