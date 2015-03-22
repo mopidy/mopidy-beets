@@ -2,19 +2,19 @@
 Mopidy-Beets
 ************
 
-.. image:: https://pypip.in/v/Mopidy-Beets/badge.png
+.. image:: https://img.shields.io/pypi/v/Mopidy-Beets.svg?style=flat
     :target: https://pypi.python.org/pypi/Mopidy-Beets/
     :alt: Latest PyPI version
 
-.. image:: https://pypip.in/d/Mopidy-Beets/badge.png
+.. image:: https://img.shields.io/pypi/dm/Mopidy-Beets.svg?style=flat
     :target: https://pypi.python.org/pypi/Mopidy-Beets/
     :alt: Number of PyPI downloads
 
-.. image:: https://travis-ci.org/mopidy/mopidy-beets.png?branch=master
+.. image:: https://img.shields.io/travis/mopidy/mopidy-beets/master.png?style=flat
     :target: https://travis-ci.org/mopidy/mopidy-beets
     :alt: Travis CI build status
 
-.. image:: https://coveralls.io/repos/mopidy/mopidy-beets/badge.png?branch=master
+.. image:: https://img.shields.io/coveralls/mopidy/mopidy-beets/master.svg?style=flat
    :target: https://coveralls.io/r/mopidy/mopidy-beets?branch=master
    :alt: Test coverage
 
