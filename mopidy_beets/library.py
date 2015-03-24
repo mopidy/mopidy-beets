@@ -15,10 +15,9 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
         self.remote = self.backend.beets_api
 
-    def find_exact(self, query=None, uris=None):
-            return self.search(query=query, uris=uris)
+    def search(self, query=None, uris=None, exact=False):
+        # TODO Support exact search
 
-    def search(self, query=None, uris=None):
         logger.debug('Query "%s":' % query)
         if not self.remote.has_connection:
             return []
