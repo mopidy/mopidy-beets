@@ -71,8 +71,7 @@ Project resources
 Changelog
 =========
 
-
-v2.0.0 (UNRELEASED)
+v2.0.0 (2015-03-25)
 -------------------
 
 - Require Mopidy >= 1.0.
@@ -81,14 +80,12 @@ v2.0.0 (UNRELEASED)
 
 - Update to work with new backend search API in Mopidy 1.0.
 
-
 v1.1.0 (2014-01-20)
 -------------------
 
 - Require Requests >= 2.0.
 
 - Updated extension and backend APIs to match Mopidy 0.18.
-
 
 v1.0.4 (2013-12-15)
 -------------------
@@ -100,7 +97,6 @@ v1.0.4 (2013-12-15)
 - Change search field ``track`` to ``track_name`` for compatibility with
   Mopidy 0.17. (Fixes: mopidy/mopidy#610)
 
-
 v1.0.3 (2013-11-02)
 -------------------
 
@@ -108,12 +104,10 @@ v1.0.3 (2013-11-02)
 
 - Rename logger to ``mopidy_beets``.
 
-
 v1.0.2 (2013-04-30)
 -------------------
 
 - Fix search.
-
 
 v1.0.1 (2013-04-28)
 -------------------
