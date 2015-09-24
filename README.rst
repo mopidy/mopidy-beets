@@ -64,8 +64,6 @@ Project resources
 
 - `Source code <https://github.com/mopidy/mopidy-beets>`_
 - `Issue tracker <https://github.com/mopidy/mopidy-beets/issues>`_
-- `Download development snapshot
-  <https://github.com/mopidy/mopidy-beets/tarball/master#egg=Mopidy-Beets-dev>`_
 
 
 Changelog
