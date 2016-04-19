@@ -48,14 +48,16 @@ class BeetsLibraryProvider(backend.LibraryProvider):
     def browse(self, uri):
         def quoting(text):
             return urllib.quote(text.encode("utf-8"))
+
         def unquoting(text):
             return urllib.unquote(text.encode("ascii")).decode("utf-8")
-        base_uri = self.root_directory.uri
+
         def get_uri_path(*args):
-            return ":".join([base_uri] + list(args))
+            return ":".join([self.root_directory.uri] + list(args))
+
         # ignore the first two tokens
         current_path = uri.split(":", 2)[-1]
-        if uri == base_uri:
+        if uri == self.root_directory.uri:
             directories = {"albums-by-artist": "Albums by Artist"}
             return [models.Ref.directory(uri=get_uri_path(uri_suffix),
                                          name=label)
