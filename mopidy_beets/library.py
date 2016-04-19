@@ -20,27 +20,34 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         self.remote = self.backend.beets_api
 
     def browse(self, uri):
-        quoting = lambda text: urllib.quote(text.encode("utf-8"))
-        unquoting = lambda text: urllib.unquote(text.encode("ascii")).decode("utf-8")
+        def quoting(text):
+            return urllib.quote(text.encode("utf-8"))
+        def unquoting(text):
+            return urllib.unquote(text.encode("ascii")).decode("utf-8")
         base_uri = self.root_directory.uri
-        uri_path = lambda *args: ":".join([base_uri] + list(args))
+        def get_uri_path(*args):
+            return ":".join([base_uri] + list(args))
         # ignore the first two tokens
         current_path = uri.split(":", 2)[-1]
         if uri == base_uri:
             directories = {"albums-by-artist": "Albums by Artist"}
-            return [models.Ref.directory(uri=uri_path(uri_suffix), name=label)
+            return [models.Ref.directory(uri=get_uri_path(uri_suffix),
+                                         name=label)
                     for uri_suffix, label in directories.items()]
         elif current_path == "albums-by-artist":
             # list all artists with albums
             album_artists = self.remote.get_album_artists()
-            first_art = album_artists[0]
-            return [models.Ref.directory(uri=uri_path("albums-by-artist", quoting(artist)), name=artist)
+            return [models.Ref.directory(uri=get_uri_path("albums-by-artist",
+                                                          quoting(artist)),
+                                         name=artist)
                     for artist in album_artists]
         elif current_path.startswith("albums-by-artist:"):
             artist = unquoting(current_path.split(":", 1)[1])
             albums_of_artist = self.remote.get_album_by_artist(artist)
             albums_of_artist.sort(key=(lambda item: item["albumartist_sort"]))
-            return [models.Ref.directory(uri=uri_path("album", str(album["id"])), name=album["album"])
+            return [models.Ref.directory(uri=get_uri_path("album",
+                                                          str(album["id"])),
+                                         name=album["album"])
                     for album in albums_of_artist]
         elif current_path.startswith("album:"):
             album_id = int(current_path.split(":", 1)[1])
