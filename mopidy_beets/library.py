@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
 
 import logging
+import urllib
 
-from mopidy import backend
+from mopidy import backend, models
 from mopidy.models import SearchResult
 
 
@@ -10,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
+
+    root_directory = models.Ref.directory(uri="beets:library", name='Beets library')
 
     def __init__(self, *args, **kwargs):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
@@ -40,6 +43,39 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             else:
                 tracks = []
         return SearchResult(uri='beets:tracks', tracks=tracks)
+
+    def browse(self, uri):
+        quoting = lambda text: urllib.quote(text.encode("utf-8"))
+        unquoting = lambda text: urllib.unquote(text.encode("ascii")).decode("utf-8")
+        base_uri = self.root_directory.uri
+        uri_path = lambda *args: ":".join([base_uri] + list(args))
+        # ignore the first two tokens
+        current_path = uri.split(":", 2)[-1]
+        if uri == base_uri:
+            directories = {"albums-by-artist": "Albums by Artist"}
+            return [models.Ref.directory(uri=uri_path(uri_suffix), name=label)
+                    for uri_suffix, label in directories.items()]
+        elif current_path == "albums-by-artist":
+            # list all artists with albums
+            album_artists = self.remote.get_album_artists()
+            first_art = album_artists[0]
+            return [models.Ref.directory(uri=uri_path("albums-by-artist", quoting(artist)), name=artist)
+                    for artist in album_artists]
+        elif current_path.startswith("albums-by-artist:"):
+            artist = unquoting(current_path.split(":", 1)[1])
+            albums_of_artist = self.remote.get_album_by_artist(artist)
+            albums_of_artist.sort(key=(lambda item: item["albumartist_sort"]))
+            return [models.Ref.directory(uri=uri_path("album", str(album["id"])), name=album["album"])
+                    for album in albums_of_artist]
+        elif current_path.startswith("album:"):
+            album_id = int(current_path.split(":", 1)[1])
+            tracks_of_album = self.remote.get_track_by_album_id(album_id)
+            tracks_of_album.sort(key=(lambda item: item.track_no))
+            return [models.Ref.track(uri=track.uri, name=track.name)
+                    for track in tracks_of_album]
+        else:
+            logger.error('Invalid browse URI: %s / %s', uri, current_path)
+            return []
 
     def search(self, query=None, uris=None, exact=False):
         logger.debug('Query "%s":' % query)
