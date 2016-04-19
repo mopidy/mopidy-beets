@@ -70,8 +70,9 @@ class BeetsRemoteClient(object):
             return False
 
     @cache(ctl=16)
-    def get_track(self, id, remote_url=False):
-        return self._convert_json_data(self._get('/item/%s' % id), remote_url)
+    def get_track(self, track_id, remote_url=False):
+        return self._convert_json_data(self._get('/item/%s' % track_id),
+                                       remote_url)
 
     @cache()
     def get_item_by(self, name):
@@ -105,7 +106,8 @@ class BeetsRemoteClient(object):
     @cache()
     def get_track_by_album_id(self, album_id):
         tracks = self._get('/item/')["items"]
-        filtered_tracks = [track for track in tracks if track["album_id"] == album_id]
+        filtered_tracks = [track for track in tracks
+                           if track["album_id"] == album_id]
         return self._parse_query(filtered_tracks)
 
     @cache()
@@ -142,9 +144,9 @@ class BeetsRemoteClient(object):
 
             return req.json()
         except Exception as e:
-            return False
             logger.error('Request %s, failed with error %s' % (
                 url, e))
+            return False
 
     def _parse_query(self, res):
         if len(res) > 0:
