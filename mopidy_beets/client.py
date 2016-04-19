@@ -85,6 +85,24 @@ class BeetsRemoteClient(object):
             return False
 
     @cache()
+    def get_track_by_artist(self, artist):
+        return [track for track in (self.get_item_by(artist) or [])
+                if track["artist"] == artist]
+
+    @cache()
+    def get_track_by_title(self, title):
+        return [track for track in (self.get_item_by(title) or [])
+                if track["title"] == title]
+
+    @cache()
+    def get_artists(self):
+        res = self._get('/artist/')
+        try:
+            return res[u'artist_names']
+        except KeyError:
+            return False
+
+    @cache()
     def get_album_by(self, name):
         if isinstance(name, unicode):
             name = name.encode('utf-8')

@@ -15,12 +15,37 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
         self.remote = self.backend.beets_api
 
-    def search(self, query=None, uris=None, exact=False):
-        # TODO Support exact search
+    def _find_exact(self, query=None, uris=None):
+        if not query:
+            # Fetch all artists (browse library)
+            return SearchResult(
+                uri='beets:search',
+                tracks=self.remote.get_artists())
+        else:
+            results = []
+            if 'artist' in query:
+                results.append(self.remote.get_track_by_artist(query['artist'][0]))
+            if 'album' in query:
+                results.append(self.remote.get_track_by_title(query['album'][0]))
+            if len(results) > 1:
+                # return only albums that match all restrictions
+                results_set = set(results.pop(0))
+                while results:
+                    results_set.intersection_update(set(results.pop(0)))
+                tracks = list(results_set)
+            elif len(results) == 1:
+                tracks = results[0]
+            else:
+                tracks = []
+        return SearchResult(uri='beets:tracks', tracks=tracks)
 
+    def search(self, query=None, uris=None, exact=False):
         logger.debug('Query "%s":' % query)
         if not self.remote.has_connection:
             return []
+
+        if exact:
+            return self._find_exact(query=query, uris=uris)
 
         if not query:
             # Fetch all data(browse library)
