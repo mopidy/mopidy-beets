@@ -24,9 +24,11 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         else:
             results = []
             if 'artist' in query:
-                results.append(self.remote.get_track_by_artist(query['artist'][0]))
+                results.append(self.remote.get_track_by_artist(
+                        query['artist'][0]))
             if 'album' in query:
-                results.append(self.remote.get_track_by_title(query['album'][0]))
+                results.append(self.remote.get_track_by_title(
+                        query['album'][0]))
             if len(results) > 1:
                 # return only albums that match all restrictions
                 results_set = set(results.pop(0))

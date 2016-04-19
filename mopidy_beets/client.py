@@ -106,7 +106,8 @@ class BeetsRemoteClient(object):
     def get_album_by(self, name):
         if isinstance(name, unicode):
             name = name.encode('utf-8')
-        albums = self._get('/album/query/%s' % urllib.quote(name)).get('results')
+        albums = self._get('/album/query/%s' %
+                           urllib.quote(name)).get('results')
         # deliver a list of album dictionaries
         return albums
 
