@@ -43,7 +43,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     for artist in album_artists]
         elif current_path.startswith("albums-by-artist:"):
             artist = unquoting(current_path.split(":", 1)[1])
-            albums_of_artist = self.remote.get_album_by_artist(artist)
+            albums_of_artist = self.remote.get_albums_by_artist(artist)
             albums_of_artist.sort(key=(lambda item: item["albumartist_sort"]))
             return [models.Ref.directory(uri=get_uri_path("album",
                                                           str(album["id"])),
@@ -51,7 +51,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     for album in albums_of_artist]
         elif current_path.startswith("album:"):
             album_id = int(current_path.split(":", 1)[1])
-            tracks_of_album = self.remote.get_track_by_album_id(album_id)
+            tracks_of_album = self.remote.get_tracks_by_album_id(album_id)
             tracks_of_album.sort(key=(lambda item: item.track_no))
             return [models.Ref.track(uri=track.uri, name=track.name)
                     for track in tracks_of_album]
@@ -68,10 +68,10 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         else:
             results = []
             if 'artist' in query:
-                results.append(self.remote.get_track_by_artist(
+                results.append(self.remote.get_tracks_by_artist(
                         query['artist'][0]))
             if 'album' in query:
-                results.append(self.remote.get_track_by_title(
+                results.append(self.remote.get_tracks_by_title(
                         query['album'][0]))
             if len(results) > 1:
                 # return only albums that match all restrictions

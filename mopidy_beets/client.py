@@ -83,12 +83,12 @@ class BeetsRemoteClient(object):
         return self._parse_reponse_tracks(res)
 
     @cache()
-    def get_track_by_artist(self, artist):
+    def get_tracks_by_artist(self, artist):
         return [track for track in self.get_tracks_by(artist)
                 if track["artist"] == artist]
 
     @cache()
-    def get_track_by_title(self, title):
+    def get_tracks_by_title(self, title):
         return [track for track in self.get_tracks_by(title)
                 if track["title"] == title]
 
@@ -101,19 +101,19 @@ class BeetsRemoteClient(object):
             return []
 
     @cache()
-    def get_track_by_album_id(self, album_id):
+    def get_tracks_by_album_id(self, album_id):
         tracks = self._get('/item/')["items"]
         filtered_tracks = [track for track in tracks
                            if track["album_id"] == album_id]
         return self._parse_response_tracks(filtered_tracks)
 
     @cache()
-    def _get_album_by_attribute(self, attribute, value):
-        return [album for album in self.get_album_by(value)]
+    def _get_albums_by_attribute(self, attribute, value):
+        return [album for album in self.get_albums_by(value)]
 
     @cache()
-    def get_album_by_artist(self, artist):
-        return self._get_album_by_attribute("albumartist", artist)
+    def get_albums_by_artist(self, artist):
+        return self._get_albums_by_attribute("albumartist", artist)
 
     @cache()
     def get_sorted_album_artists(self):
@@ -127,7 +127,7 @@ class BeetsRemoteClient(object):
                       key=lambda item: artists_sorter_dict[item])
 
     @cache()
-    def get_album_by(self, name):
+    def get_albums_by(self, name):
         if isinstance(name, unicode):
             name = name.encode('utf-8')
         albums = self._get('/album/query/%s' %
