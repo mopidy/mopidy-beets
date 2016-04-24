@@ -75,21 +75,21 @@ class BeetsRemoteClient(object):
                                       remote_url)
 
     @cache()
-    def get_item_by(self, name):
+    def get_tracks_by(self, name):
         if isinstance(name, unicode):
             name = name.encode('utf-8')
         res = self._get('/item/query/%s' %
                         urllib.quote(name)).get('results')
-        return self._parse_query(res)
+        return self._parse_reponse_tracks(res)
 
     @cache()
     def get_track_by_artist(self, artist):
-        return [track for track in (self.get_item_by(artist) or [])
+        return [track for track in (self.get_tracks_by(artist) or [])
                 if track["artist"] == artist]
 
     @cache()
     def get_track_by_title(self, title):
-        return [track for track in (self.get_item_by(title) or [])
+        return [track for track in (self.get_tracks_by(title) or [])
                 if track["title"] == title]
 
     @cache()
@@ -105,7 +105,7 @@ class BeetsRemoteClient(object):
         tracks = self._get('/item/')["items"]
         filtered_tracks = [track for track in tracks
                            if track["album_id"] == album_id]
-        return self._parse_query(filtered_tracks)
+        return self._parse_response_tracks(filtered_tracks)
 
     @cache()
     def _get_album_by_attribute(self, attribute, value):
@@ -145,9 +145,9 @@ class BeetsRemoteClient(object):
         else:
             return req.json()
 
-    def _parse_reponse_tracks(self, response):
+    def _parse_response_tracks(self, response):
         tracks = []
-        for dataset in response:
+        for dataset in (response or []):
             try:
                 tracks.append(self._parse_track_data(dataset))
             except (ValueError, KeyError) as exc:

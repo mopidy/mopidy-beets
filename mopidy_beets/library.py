@@ -145,7 +145,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         if 'any' in query:
             return SearchResult(
                 uri='beets:search-any',
-                tracks=self.remote.get_item_by(query['any'][0]) or [])
+                tracks=self.remote.get_tracks_by(query['any'][0]) or [])
         else:
             search = []
             for (field, val) in query.iteritems():
@@ -160,7 +160,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             logger.debug('Search query "%s":' % search)
             return SearchResult(
                 uri='beets:search-' + '-'.join(search),
-                tracks=self.remote.get_item_by('/'.join(search)) or [])
+                tracks=self.remote.get_tracks_by('/'.join(search)) or [])
 
     def lookup(self, uri):
         track_id = uri.split(";")[1]
