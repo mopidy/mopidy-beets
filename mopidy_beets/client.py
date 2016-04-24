@@ -75,22 +75,61 @@ class BeetsRemoteClient(object):
                                       remote_url)
 
     @cache()
-    def get_tracks_by(self, name):
-        if isinstance(name, unicode):
-            name = name.encode('utf-8')
-        res = self._get('/item/query/%s' %
-                        urllib.quote(name)).get('results')
-        return self._parse_reponse_tracks(res)
+    def get_tracks_by(self, attributes, exact_text):
+        """ The beets web-api accepts queries like:
+                /item/query/album_id:183/track:2
+                /item/query/album:Foo
+            Text-based matches (e.g. "album" or "artist") are case-independent
+            "is in" matches. Thus we need to filter the result, since we want
+            exact matches.
 
-    @cache()
-    def get_tracks_by_artist(self, artist):
-        return [track for track in self.get_tracks_by(artist)
-                if track["artist"] == artist]
-
-    @cache()
-    def get_tracks_by_title(self, title):
-        return [track for track in self.get_tracks_by(title)
-                if track["title"] == title]
+            @param attributes: attributes to be matched
+            @type attribute: list of key/value pairs or strings
+            @param exact_text: True for exact matches, False for
+                               case-insensitive "is in" matches (only relevant
+                               for text values - not integers)
+            @type exact_text: bool
+            @rtype: list of mopidy.models.Track
+        """
+        # assemble the query string
+        query_parts = []
+        # only used for "exact_text"
+        exact_query_list = []
+        def quote_and_encode(text):
+            # utf-8 seems to be necessary for Python 2.7 and urllib.quote
+            if isinstance(text, unicode):
+                text = text.encode("utf-8")
+            # quoting for the query string
+            return urllib.quote(text)
+        for attribute in attributes:
+            if isinstance(attribute, (str, unicode)):
+                key = None
+                value = quote_and_encode(attribute)
+                query_parts.append(value)
+            else:
+                # the beets API accepts upper and lower case, but always
+                # returns lower case attributes
+                key = quote_and_encode(attribute[0].lower())
+                value = quote_and_encode(attribute[1])
+                query_parts.append("{0}:{1}".format(key, value))
+            exact_query_list.append((key, value))
+        query_string = "/".join(query_parts)
+        logger.debug("Track query: %s", query_string)
+        tracks = self._get('/item/query/' + query_string)["results"]
+        if exact_text:
+            # verify that text attributes do not just test "is in", but match
+            # equality
+            for key, value in exact_query_list:
+                if key is None:
+                    # the value must match one of the
+                    tracks = [track for track in tracks
+                              if value in track.values()]
+                else:
+                    # filtering is necessary only for text based attributes
+                    if tracks and isinstance(tracks[0][key], str):
+                        tracks = [track for track in tracks
+                                  if track[key] == value]
+        return self._parse_response_tracks(tracks)
 
     @cache()
     def get_artists(self):

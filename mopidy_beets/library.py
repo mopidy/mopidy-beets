@@ -19,46 +19,6 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
         self.remote = self.backend.beets_api
 
-    def browse(self, uri):
-        def quoting(text):
-            return urllib.quote(text.encode("utf-8"))
-        def unquoting(text):
-            return urllib.unquote(text.encode("ascii")).decode("utf-8")
-        base_uri = self.root_directory.uri
-        def get_uri_path(*args):
-            return ":".join([base_uri] + list(args))
-        # ignore the first two tokens
-        current_path = uri.split(":", 2)[-1]
-        if uri == base_uri:
-            directories = {"albums-by-artist": "Albums by Artist"}
-            return [models.Ref.directory(uri=get_uri_path(uri_suffix),
-                                         name=label)
-                    for uri_suffix, label in directories.items()]
-        elif current_path == "albums-by-artist":
-            # list all artists with albums
-            album_artists = self.remote.get_sorted_album_artists()
-            return [models.Ref.directory(uri=get_uri_path("albums-by-artist",
-                                                          quoting(artist)),
-                                         name=artist)
-                    for artist in album_artists]
-        elif current_path.startswith("albums-by-artist:"):
-            artist = unquoting(current_path.split(":", 1)[1])
-            albums_of_artist = self.remote.get_albums_by_artist(artist)
-            albums_of_artist.sort(key=(lambda item: item["albumartist_sort"]))
-            return [models.Ref.directory(uri=get_uri_path("album",
-                                                          str(album["id"])),
-                                         name=album["album"])
-                    for album in albums_of_artist]
-        elif current_path.startswith("album:"):
-            album_id = int(current_path.split(":", 1)[1])
-            tracks_of_album = self.remote.get_tracks_by_album_id(album_id)
-            tracks_of_album.sort(key=(lambda item: item.track_no))
-            return [models.Ref.track(uri=track.uri, name=track.name)
-                    for track in tracks_of_album]
-        else:
-            logger.error('Invalid browse URI: %s / %s', uri, current_path)
-            return []
-
     def _find_exact(self, query=None, uris=None):
         if not query:
             # Fetch all artists (browse library)
@@ -104,14 +64,14 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     for uri_suffix, label in directories.items()]
         elif current_path == "albums-by-artist":
             # list all artists with albums
-            album_artists = self.remote.get_album_artists()
+            album_artists = self.remote.get_sorted_album_artists()
             return [models.Ref.directory(uri=get_uri_path("albums-by-artist",
                                                           quoting(artist)),
                                          name=artist)
                     for artist in album_artists]
         elif current_path.startswith("albums-by-artist:"):
             artist = unquoting(current_path.split(":", 1)[1])
-            albums_of_artist = self.remote.get_album_by_artist(artist)
+            albums_of_artist = self.remote.get_albums_by_artist(artist)
             albums_of_artist.sort(key=(lambda item: item["albumartist_sort"]))
             return [models.Ref.directory(uri=get_uri_path("album",
                                                           str(album["id"])),
@@ -119,7 +79,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     for album in albums_of_artist]
         elif current_path.startswith("album:"):
             album_id = int(current_path.split(":", 1)[1])
-            tracks_of_album = self.remote.get_track_by_album_id(album_id)
+            tracks_of_album = self.remote.get_tracks_by_album_id(album_id)
             tracks_of_album.sort(key=(lambda item: item.track_no))
             return [models.Ref.track(uri=track.uri, name=track.name)
                     for track in tracks_of_album]
@@ -132,35 +92,34 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         if not self.remote.has_connection:
             return []
 
-        if exact:
-            return self._find_exact(query=query, uris=uris)
-
         if not query:
             # Fetch all data(browse library)
-            return SearchResult(
-                uri='beets:search',
-                tracks=self.remote.get_tracks())
+            return SearchResult(uri='beets:search',
+                                tracks=self.remote.get_tracks())
 
         self._validate_query(query)
-        if 'any' in query:
-            return SearchResult(
-                uri='beets:search-any',
-                tracks=self.remote.get_tracks_by(query['any'][0]))
-        else:
-            search = []
-            for (field, val) in query.iteritems():
-                if field == "album":
-                    search.append(val[0])
-                if field == "artist":
-                    search.append(val[0])
-                if field == "track_name":
-                    search.append(val[0])
-                if field == "date":
-                    search.append(val[0])
-            logger.debug('Search query "%s":' % search)
-            return SearchResult(
-                uri='beets:search-' + '-'.join(search),
-                tracks=self.remote.get_tracks_by('/'.join(search)))
+        search_list = []
+        for (field, val) in query.iteritems():
+            if field == "any":
+                search_list.append(val[0])
+            elif field == "album":
+                search_list.append(("album", val[0]))
+            elif field == "artist":
+                search_list.append(("artist", val[0]))
+            elif field == "track_name":
+                search_list.append(("title", val[0]))
+            elif field == "date":
+                # TODO: there is no "date" in beets - just "day", "month"
+                #       and "year". Determine the format of "date" and
+                #       define a suitable date format string?
+                search_list.append(("date", val[0]))
+            else:
+                logger.info("Ignoring unknown query key: %s", field)
+        logger.debug('Search query "%s":' % search_list)
+        tracks = self.remote.get_tracks_by(search_list, exact)
+        uri = '-'.join([item if isinstance(item, str) else "=".join(item)
+                        for item in search_list])
+        return SearchResult(uri='beets:search-' + uri, tracks=tracks)
 
     def lookup(self, uri):
         track_id = uri.split(";")[1]
