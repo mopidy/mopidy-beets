@@ -52,14 +52,14 @@ class BeetsRemoteClient(object):
     def __init__(self, endpoint):
         super(BeetsRemoteClient, self).__init__()
         self.api = requests.Session()
-        self.has_connection = False
         self.api_endpoint = endpoint
         logger.info('Connecting to Beets remote library %s', endpoint)
         try:
             self.api.get(self.api_endpoint)
             self.has_connection = True
         except RequestException as e:
-            logger.error('Beets error: %s' % e)
+            logger.error('Beets error - connection failed: %s', e)
+            self.has_connection = False
 
     @cache()
     def get_tracks(self):
@@ -71,8 +71,8 @@ class BeetsRemoteClient(object):
 
     @cache(ctl=16)
     def get_track(self, track_id, remote_url=False):
-        return self._convert_json_data(self._get('/item/%s' % track_id),
-                                       remote_url)
+        return self._parse_track_data(self._get('/item/%s' % track_id),
+                                      remote_url)
 
     @cache()
     def get_item_by(self, name):
@@ -80,10 +80,7 @@ class BeetsRemoteClient(object):
             name = name.encode('utf-8')
         res = self._get('/item/query/%s' %
                         urllib.quote(name)).get('results')
-        try:
-            return self._parse_query(res)
-        except Exception:
-            return False
+        return self._parse_query(res)
 
     @cache()
     def get_track_by_artist(self, artist):
@@ -143,20 +140,20 @@ class BeetsRemoteClient(object):
                     url, req.status_code))
 
             return req.json()
-        except Exception as e:
-            logger.error('Request %s, failed with error %s' % (
-                url, e))
-            return False
+        except RequestException as e:
+            logger.error('Request %s, failed with error %s', url, e)
+            return None
 
-    def _parse_query(self, res):
-        if len(res) > 0:
-            tracks = []
-            for track in res:
-                tracks.append(self._convert_json_data(track))
-            return tracks
-        return None
+    def _parse_reponse_tracks(self, response):
+        tracks = []
+        for dataset in response:
+            try:
+                tracks.append(self._parse_track_data(dataset))
+            except (ValueError, KeyError) as exc:
+                logger.info("Failed to parse track data: %s", exc)
+        return [self._parse_track_data(track) for track in response]
 
-    def _convert_json_data(self, data, remote_url=False):
+    def _parse_track_data(self, data, remote_url=False):
         if not data:
             return
 

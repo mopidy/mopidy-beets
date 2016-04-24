@@ -163,13 +163,10 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 tracks=self.remote.get_item_by('/'.join(search)) or [])
 
     def lookup(self, uri):
-        try:
-            track_id = uri.split(";")[1]
-            logger.debug('Beets track id for "%s": %s' % (track_id, uri))
-            return [self.remote.get_track(track_id, True)]
-        except Exception as error:
-            logger.debug('Failed to lookup "%s": %s' % (uri, error))
-            return []
+        track_id = uri.split(";")[1]
+        logger.debug('Beets track id for "%s": %s' % (track_id, uri))
+        track = self.remote.get_track(track_id, True)
+        return [track] if track else []
 
     def _validate_query(self, query):
         for values in query.values():
