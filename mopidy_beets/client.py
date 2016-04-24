@@ -131,18 +131,19 @@ class BeetsRemoteClient(object):
         return albums
 
     def _get(self, url):
+        url = self.api_endpoint + url
+        logger.debug('Requesting %s' % url)
         try:
-            url = self.api_endpoint + url
-            logger.debug('Requesting %s' % url)
             req = self.api.get(url)
-            if req.status_code != 200:
-                raise logger.error('Request %s, failed with status code %s' % (
-                    url, req.status_code))
-
-            return req.json()
         except RequestException as e:
             logger.error('Request %s, failed with error %s', url, e)
             return None
+        if req.status_code != 200:
+            logger.error('Request %s, failed with status code %s',
+                         url, req.status_code)
+            return None
+        else:
+            return req.json()
 
     def _parse_reponse_tracks(self, response):
         tracks = []
