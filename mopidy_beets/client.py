@@ -84,12 +84,12 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_track_by_artist(self, artist):
-        return [track for track in (self.get_tracks_by(artist) or [])
+        return [track for track in self.get_tracks_by(artist)
                 if track["artist"] == artist]
 
     @cache()
     def get_track_by_title(self, title):
-        return [track for track in (self.get_tracks_by(title) or [])
+        return [track for track in self.get_tracks_by(title)
                 if track["title"] == title]
 
     @cache()
@@ -98,7 +98,7 @@ class BeetsRemoteClient(object):
         try:
             return res[u'artist_names']
         except KeyError:
-            return False
+            return []
 
     @cache()
     def get_track_by_album_id(self, album_id):
@@ -109,7 +109,7 @@ class BeetsRemoteClient(object):
 
     @cache()
     def _get_album_by_attribute(self, attribute, value):
-        return [album for album in (self.get_album_by(value) or [])]
+        return [album for album in self.get_album_by(value)]
 
     @cache()
     def get_album_by_artist(self, artist):
@@ -128,7 +128,8 @@ class BeetsRemoteClient(object):
         albums = self._get('/album/query/%s' %
                            urllib.quote(name)).get('results')
         # deliver a list of album dictionaries
-        return albums
+        # TODO: deliver Album objects
+        return albums if albums else []
 
     def _get(self, url):
         url = self.api_endpoint + url
@@ -156,7 +157,7 @@ class BeetsRemoteClient(object):
 
     def _parse_track_data(self, data, remote_url=False):
         if not data:
-            return
+            return None
 
         track_kwargs = {}
         album_kwargs = {}
