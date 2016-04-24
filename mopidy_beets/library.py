@@ -36,7 +36,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     for uri_suffix, label in directories.items()]
         elif current_path == "albums-by-artist":
             # list all artists with albums
-            album_artists = self.remote.get_album_artists()
+            album_artists = self.remote.get_sorted_album_artists()
             return [models.Ref.directory(uri=get_uri_path("albums-by-artist",
                                                           quoting(artist)),
                                          name=artist)

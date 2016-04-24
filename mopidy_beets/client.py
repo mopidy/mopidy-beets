@@ -116,10 +116,15 @@ class BeetsRemoteClient(object):
         return self._get_album_by_attribute("albumartist", artist)
 
     @cache()
-    def get_album_artists(self):
+    def get_sorted_album_artists(self):
         albums = self._get('/album/')["albums"]
-        # remove duplicates
-        return list(set([album["albumartist"] for album in albums]))
+        # create a dictionary of artist -> artist_sorting
+        # Meanwhile remove duplicates and filter empty artist fields.
+        artists_sorter_dict = {album["albumartist"]: album["albumartist_sort"]
+                               for album in albums if album["albumartist"]}
+        # sort the keys according to their dict values
+        return sorted(artists_sorter_dict.keys(),
+                      key=lambda item: artists_sorter_dict[item])
 
     @cache()
     def get_album_by(self, name):
