@@ -74,11 +74,28 @@ class BeetsRemoteClient(object):
         return self._parse_track_data(self._get('/item/%s' % track_id),
                                       remote_url)
 
+    @cache(ctl=16)
+    def get_album(self, album_id):
+        return self._parse_album_data(self._get('/album/%s' % album_id))
+
     @cache()
-    def get_tracks_by(self, attributes, exact_text):
+    def get_tracks_by(self, attributes, exact_text, sort_fields):
+        tracks = self._get_objects_by_attribute('/item/query/', attributes,
+                                                exact_text, sort_fields)
+        return self._parse_multiple_tracks(tracks)
+
+    @cache()
+    def get_albums_by(self, attributes, exact_text, sort_fields):
+        albums = self._get_objects_by_attribute('/album/query/', attributes,
+                                                exact_text, sort_fields)
+        return self._parse_multiple_albums(albums)
+
+    def _get_objects_by_attribute(self, base_path, attributes, exact_text,
+                                  sort_fields):
         """ The beets web-api accepts queries like:
                 /item/query/album_id:183/track:2
                 /item/query/album:Foo
+                /album/query/track_no:12/year+/month+
             Text-based matches (e.g. "album" or "artist") are case-independent
             "is in" matches. Thus we need to filter the result, since we want
             exact matches.
@@ -89,18 +106,24 @@ class BeetsRemoteClient(object):
                                case-insensitive "is in" matches (only relevant
                                for text values - not integers)
             @type exact_text: bool
-            @rtype: list of mopidy.models.Track
+            @param sort_fields: fieldnames, each followed by "+" or "-"
+            @type sort_fields: list of strings
+            @rtype: list of json datasets describing tracks or albums
         """
         # assemble the query string
         query_parts = []
         # only used for "exact_text"
         exact_query_list = []
+
         def quote_and_encode(text):
             # utf-8 seems to be necessary for Python 2.7 and urllib.quote
             if isinstance(text, unicode):
                 text = text.encode("utf-8")
+            elif isinstance(text, (int, float)):
+                text = str(text)
             # quoting for the query string
             return urllib.quote(text)
+
         for attribute in attributes:
             if isinstance(attribute, (str, unicode)):
                 key = None
@@ -114,22 +137,20 @@ class BeetsRemoteClient(object):
                 query_parts.append("{0}:{1}".format(key, value))
             exact_query_list.append((key, value))
         query_string = "/".join(query_parts)
-        logger.debug("Track query: %s", query_string)
-        tracks = self._get('/item/query/' + query_string)["results"]
+        logger.debug("Beets query: %s", query_string)
+        items = self._get(base_path + query_string)["results"]
         if exact_text:
             # verify that text attributes do not just test "is in", but match
             # equality
             for key, value in exact_query_list:
                 if key is None:
                     # the value must match one of the
-                    tracks = [track for track in tracks
-                              if value in track.values()]
+                    items = [item for item in items if value in item.values()]
                 else:
                     # filtering is necessary only for text based attributes
-                    if tracks and isinstance(tracks[0][key], str):
-                        tracks = [track for track in tracks
-                                  if track[key] == value]
-        return self._parse_multiple_tracks(tracks)
+                    if items and isinstance(items[0][key], str):
+                        items = [item for item in items if item[key] == value]
+        return items
 
     @cache()
     def get_artists(self):
@@ -167,16 +188,6 @@ class BeetsRemoteClient(object):
                     result.append(album["albumartist"])
                 previous_artist = album["albumartist"]
         return result
-
-    @cache()
-    def get_albums_by(self, name):
-        if isinstance(name, unicode):
-            name = name.encode('utf-8')
-        albums = self._get('/album/query/%s' %
-                           urllib.quote(name)).get('results')
-        # deliver a list of album dictionaries
-        # TODO: deliver Album objects
-        return albums if albums else []
 
     def _get(self, url):
         url = self.api_endpoint + url

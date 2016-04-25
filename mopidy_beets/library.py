@@ -116,12 +116,13 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             else:
                 logger.info("Ignoring unknown query key: %s", field)
         logger.debug('Search query "%s":' % search_list)
-        tracks = self.remote.get_tracks_by(search_list, exact)
+        tracks = self.remote.get_tracks_by(search_list, exact, [])
         uri = '-'.join([item if isinstance(item, str) else "=".join(item)
                         for item in search_list])
         return SearchResult(uri='beets:search-' + uri, tracks=tracks)
 
     def lookup(self, uri):
+        # TODO: verify if we should do the same for Albums
         track_id = uri.split(";")[1]
         logger.debug('Beets track id for "%s": %s' % (track_id, uri))
         track = self.remote.get_track(track_id, True)
