@@ -1,22 +1,20 @@
 from __future__ import unicode_literals
 
 import logging
-import urllib
 
 from mopidy import backend, models
 from mopidy.models import SearchResult
 
+from .translator import assemble_uri, parse_uri
 
-_ID_SEPARATOR = ";"
-_PATH_SEPARATOR = ":"
 
 logger = logging.getLogger(__name__)
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
 
-    root_directory = models.Ref.directory(
-        uri=_PATH_SEPARATOR.join(["beets", "library"]), name='Beets library')
+    root_directory = models.Ref.directory(uri="beets:library",
+                                          name='Beets library')
 
     def __init__(self, *args, **kwargs):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
@@ -49,45 +47,35 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         return SearchResult(uri='beets:tracks', tracks=tracks)
 
     def browse(self, uri):
-        def quoting(text):
-            return urllib.quote(text.encode("utf-8"))
-
-        def unquoting(text):
-            return urllib.unquote(text.encode("ascii")).decode("utf-8")
-
-        def get_uri_path(*args, **kwargs):
-            id_value = kwargs.get("id_value", None)
-            path_tokens = [self.root_directory.uri] + list(args)
-            base_path = _PATH_SEPARATOR.join(path_tokens)
-            if id_value is None:
-                return base_path
-            else:
-                return base_path + _ID_SEPARATOR + str(id_value)
-
-        # ignore the first token
-        root_token_count = self.root_directory.uri.count(_PATH_SEPARATOR) + 1
-        current_path = uri.split(_PATH_SEPARATOR, root_token_count)[-1]
         if uri == self.root_directory.uri:
             directories = {"albums-by-artist": "Albums by Artist"}
-            return [models.Ref.directory(uri=get_uri_path(uri_suffix),
-                                         name=label)
+            return [models.Ref.directory(name=label,
+                        uri=assemble_uri(self.root_directory.uri, uri_suffix))
                     for uri_suffix, label in directories.items()]
-        elif current_path == "albums-by-artist":
+        parsed = parse_uri(uri, url_prefix=self.root_directory.uri)
+        if not parsed:
+            logger.error("Beets - failed to parse uri: %s", uri)
+            return []
+        elif (parsed[0] == "albums-by-artist") and (parsed[1] is None):
             # list all artists with albums
             album_artists = self.remote.get_sorted_album_artists()
-            return [models.Ref.directory(
-                        uri=get_uri_path("albums-by-artist",
-                                         id_value=quoting(artist)),
-                        name=artist)
+            return [models.Ref.directory(name=artist,
+                        uri=assemble_uri(self.root_directory.uri,
+                                         "albums-by-artist", id_value=artist))
                     for artist in album_artists]
-        elif current_path.startswith("albums-by-artist" + _ID_SEPARATOR):
-            artist = unquoting(current_path.split(_ID_SEPARATOR, 1)[1])
+        elif parsed[0] == "albums-by-artist":
+            artist_name = parsed[1]
             albums_of_artist = self.remote.get_albums_by(
-                [("albumartist", artist)], True, ["original_year+", "year+"])
+                [("albumartist", artist_name)], True,
+                ["original_year+", "year+"])
             return [models.Ref.directory(uri=album.uri, name=album.name)
                     for album in albums_of_artist]
-        elif current_path.startswith("album" + _ID_SEPARATOR):
-            album_id = int(current_path.split(_ID_SEPARATOR, 1)[1])
+        elif parsed[0] == "album":
+            try:
+                album_id = int(parsed[1])
+            except ValueError:
+                logger.error("Beets - invalid album ID: %s", parsed[1])
+                return []
             tracks = self.remote.get_tracks_by([("album_id", album_id)], True,
                                                ["track+"])
             return [models.Ref.track(uri=track.uri, name=track.name)
