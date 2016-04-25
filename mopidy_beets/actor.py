@@ -35,4 +35,4 @@ class BeetsPlaybackProvider(backend.PlaybackProvider):
         track_id = uri.split(';')[1]
         logger.debug('Getting info for track %s with id %s' % (uri, track_id))
         track = self.backend.beets_api.get_track(track_id, True)
-        return track.uri
+        return track.uri if track else None
