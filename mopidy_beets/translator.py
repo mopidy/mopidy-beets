@@ -66,19 +66,19 @@ def parse_track(data, api_url, remote_url=False):
     return Track(**track_kwargs)
 
 
-def parse_uri(uri, url_prefix=None, id_type=None):
+def parse_uri(uri, uri_prefix=None, id_type=None):
     """ split a URI into an optional prefix and a value
 
         The format of a uri is similar to this:
             beets:library:album;Foo%20Bar
         (note the ampersand separating the value from the path)
 
-        url_prefix (optional):
+        uri_prefix (optional):
             * remove the string from the beginning of uri
             * the match is valid only if the prefix is separated from the
               remainder of the URI with a color, an ampersand or it is equal
               to the full URI
-            * the function returns "None" if the url_prefix cannot be removed
+            * the function returns "None" if the uri_prefix cannot be removed
               (you should consider this an error condition)
 
         id_type (optional):
@@ -91,15 +91,15 @@ def parse_uri(uri, url_prefix=None, id_type=None):
         result_uri, id_string = uri.split(";", 1)
     else:
         result_uri, id_string = uri, None
-    if url_prefix:
-        if uri == url_prefix:
+    if uri_prefix:
+        if uri == uri_prefix:
             result_uri = ""
-        elif result_uri.startswith(url_prefix + ":"):
-            result_uri = result_uri[len(url_prefix) + 1:]
+        elif result_uri.startswith(uri_prefix + ":"):
+            result_uri = result_uri[len(uri_prefix) + 1:]
         else:
             # this prefix cannot be splitted
             logger.info("Failed to remove URI prefix (%s): %s",
-                        url_prefix, uri)
+                        uri_prefix, uri)
             return None
     if id_string:
         id_value = urllib.unquote(id_string.encode("ascii")).decode("utf-8")

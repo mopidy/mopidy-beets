@@ -48,28 +48,63 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
     def browse(self, uri):
         if uri == self.root_directory.uri:
-            directories = {"albums-by-artist": "Albums by Artist"}
+            directories = [("albums-by-artist", "Albums by Artist"),
+                           ("albums-by-genre", "Albums by Genre"),
+                           ("albums-by-year", "Albums by Year")]
             return [models.Ref.directory(name=label,
                         uri=assemble_uri(self.root_directory.uri, uri_suffix))
-                    for uri_suffix, label in directories.items()]
+                    for uri_suffix, label in directories]
         parsed = parse_uri(uri, url_prefix=self.root_directory.uri)
         if not parsed:
             logger.error("Beets - failed to parse uri: %s", uri)
             return []
-        elif (parsed[0] == "albums-by-artist") and (parsed[1] is None):
-            # list all artists with albums
-            album_artists = self.remote.get_sorted_album_artists()
-            return [models.Ref.directory(name=artist,
-                        uri=assemble_uri(self.root_directory.uri,
-                                         "albums-by-artist", id_value=artist))
-                    for artist in album_artists]
         elif parsed[0] == "albums-by-artist":
-            artist_name = parsed[1]
-            albums_of_artist = self.remote.get_albums_by(
-                [("albumartist", artist_name)], True,
-                ["original_year+", "year+"])
-            return [models.Ref.directory(uri=album.uri, name=album.name)
-                    for album in albums_of_artist]
+            if parsed[1] is None:
+                # list all artists with albums
+                keys = self.remote.get_sorted_unique_album_attributes(
+                    "albumartist", True)
+                return [models.Ref.directory(name=artist,
+                            uri=assemble_uri(self.root_directory.uri,
+                                             parsed[0], id_value=artist))
+                        for artist in keys]
+            else:
+                artist_name = parsed[1]
+                albums = self.remote.get_albums_by(
+                    [("albumartist", artist_name)], True,
+                    ["original_year+", "year+"])
+                return [models.Ref.directory(uri=album.uri, name=album.name)
+                        for album in albums]
+        elif parsed[0] == "albums-by-genre":
+            if parsed[1] is None:
+                # list all genres with albums
+                keys = self.remote.get_sorted_unique_album_attributes("genre",
+                                                                      False)
+                return [models.Ref.directory(name=genre,
+                            uri=assemble_uri(self.root_directory.uri,
+                                             parsed[0], id_value=genre))
+                        for genre in keys]
+            else:
+                genre_name = parsed[1]
+                albums = self.remote.get_albums_by([("genre", genre_name)],
+                                                   True, ["album+"])
+                return [models.Ref.directory(uri=album.uri, name=album.name)
+                        for album in albums]
+        elif parsed[0] == "albums-by-year":
+            if parsed[1] is None:
+                # list all genres with albums
+                keys = self.remote.get_sorted_unique_album_attributes("year",
+                                                                      False)
+                return [models.Ref.directory(name=unicode(year),
+                            uri=assemble_uri(self.root_directory.uri,
+                                             parsed[0], id_value=year))
+                        for year in keys]
+            else:
+                year = parsed[1]
+                sort_keys = ["month+", "day+", "album+"]
+                albums = self.remote.get_albums_by([("year", year)], True,
+                                                   sort_keys)
+                return [models.Ref.directory(uri=album.uri, name=album.name)
+                        for album in albums]
         elif parsed[0] == "album":
             try:
                 album_id = int(parsed[1])
