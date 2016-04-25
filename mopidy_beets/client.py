@@ -4,10 +4,10 @@ import logging
 import time
 import urllib
 
-from mopidy.models import Album, Artist, Track
-
 import requests
 from requests.exceptions import RequestException
+
+from .translator import parse_album, parse_track
 
 
 logger = logging.getLogger(__name__)
@@ -71,12 +71,13 @@ class BeetsRemoteClient(object):
 
     @cache(ctl=16)
     def get_track(self, track_id, remote_url=False):
-        return self._parse_track_data(self._get('/item/%s' % track_id),
-                                      remote_url)
+        return parse_track(self._get('/item/%s' % track_id), self.api_endpoint,
+                           remote_url)
 
     @cache(ctl=16)
     def get_album(self, album_id):
-        return self._parse_album_data(self._get('/album/%s' % album_id))
+        return parse_album(self._get('/album/%s' % album_id),
+                           self.api_endpoint)
 
     @cache()
     def get_tracks_by(self, attributes, exact_text, sort_fields):
@@ -200,7 +201,7 @@ class BeetsRemoteClient(object):
         albums = []
         for dataset in (album_datasets or []):
             try:
-                albums.append(self._parse_album_data(dataset))
+                albums.append(parse_album(dataset, self.api_endpoint))
             except (ValueError, KeyError) as exc:
                 logger.info("Failed to parse album data: %s", exc)
         return [album for album in albums if album]
@@ -209,62 +210,7 @@ class BeetsRemoteClient(object):
         tracks = []
         for dataset in (track_datasets or []):
             try:
-                tracks.append(self._parse_track_data(dataset))
+                tracks.append(parse_track(dataset, self.api_endpoint))
             except (ValueError, KeyError) as exc:
                 logger.info("Failed to parse track data: %s", exc)
         return [track for track in tracks if track]
-
-    def _get_artist(self, name, musicbrainz_id):
-        kwargs = {}
-        if name:
-            kwargs["name"] = name
-        if musicbrainz_id:
-            kwargs["musicbrainz_id"] = musicbrainz_id
-        if kwargs:
-            return Artist(**kwargs)
-        else:
-            return None
-
-    def _parse_album_data(self, data):
-        if not data:
-            return None
-        album_kwargs = {}
-        if 'tracktotal' in data:
-            album_kwargs['num_tracks'] = int(data['tracktotal'])
-        if 'album' in data:
-            album_kwargs['name'] = data['album']
-        if 'mb_albumid' in data:
-            album_kwargs['musicbrainz_id'] = data['mb_albumid']
-        if 'album_id' in data:
-            album_art_url = ('%s/album/%s/art'
-                             .format(self.api_endpoint, data['album_id']))
-            album_kwargs['images'] = [album_art_url]
-        album_kwargs['uri'] = 'beets:library:album;{0}'.format(data['id'])
-        artist = self._get_artist(data.get('albumartist'),
-                                  data.get('mb_albumartistid'))
-        if artist:
-            album_kwargs['artists'] = [artist]
-        return Album(**album_kwargs)
-
-    def _parse_track_data(self, data, remote_url=False):
-        if not data:
-            return None
-        track_kwargs = {}
-        if 'track' in data:
-            track_kwargs['track_no'] = int(data['track'])
-        if 'title' in data:
-            track_kwargs['name'] = data['title']
-        if 'date' in data:
-            track_kwargs['date'] = data['date']
-        if 'mb_trackid' in data:
-            track_kwargs['musicbrainz_id'] = data['mb_trackid']
-        artist = self._get_artist(data.get('artist'), data.get('mb_artistid'))
-        if artist:
-            track_kwargs['artists'] = [artist]
-        if remote_url:
-            track_kwargs['uri'] = '%s/item/%s/file' % (
-                self.api_endpoint, data['id'])
-        else:
-            track_kwargs['uri'] = 'beets:track;%s' % data['id']
-        track_kwargs['length'] = int(data.get('length', 0)) * 1000
-        return Track(**track_kwargs)
