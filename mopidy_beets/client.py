@@ -136,6 +136,13 @@ class BeetsRemoteClient(object):
                 value = quote_and_encode(attribute[1])
                 query_parts.append("{0}:{1}".format(key, value))
             exact_query_list.append((key, value))
+        # add sorting fields
+        for sort_field in (sort_fields or []):
+            if (len(sort_field) > 1) and (sort_field[-1] in ("-", "+")):
+                query_parts.append(quote_and_encode(sort_field))
+            else:
+                logger.info("Beets - invalid sorting field ignore: %s",
+                            sort_field)
         query_string = "/".join(query_parts)
         logger.debug("Beets query: %s", query_string)
         items = self._get(base_path + query_string)["results"]
@@ -159,21 +166,6 @@ class BeetsRemoteClient(object):
         names.sort()
         # remove empty names
         return [name for name in names if name]
-
-    @cache()
-    def get_tracks_by_album_id(self, album_id):
-        tracks = self._get('/item/')["items"]
-        filtered_tracks = [track for track in tracks
-                           if track["album_id"] == album_id]
-        return self._parse_multiple_tracks(filtered_tracks)
-
-    @cache()
-    def _get_albums_by_attribute(self, attribute, value):
-        return [album for album in self.get_albums_by(value)]
-
-    @cache()
-    def get_albums_by_artist(self, artist):
-        return self._get_albums_by_attribute("albumartist", artist)
 
     @cache()
     def get_sorted_album_artists(self):

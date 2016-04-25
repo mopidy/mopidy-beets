@@ -7,13 +7,16 @@ from mopidy import backend, models
 from mopidy.models import SearchResult
 
 
+_ID_SEPARATOR = ";"
+_PATH_SEPARATOR = ":"
+
 logger = logging.getLogger(__name__)
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
 
-    root_directory = models.Ref.directory(uri="beets:library",
-                                          name='Beets library')
+    root_directory = models.Ref.directory(
+        uri=_PATH_SEPARATOR.join(["beets", "library"]), name='Beets library')
 
     def __init__(self, *args, **kwargs):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
@@ -52,11 +55,18 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         def unquoting(text):
             return urllib.unquote(text.encode("ascii")).decode("utf-8")
 
-        def get_uri_path(*args):
-            return ":".join([self.root_directory.uri] + list(args))
+        def get_uri_path(*args, **kwargs):
+            id_value = kwargs.get("id_value", None)
+            path_tokens = [self.root_directory.uri] + list(args)
+            base_path = _PATH_SEPARATOR.join(path_tokens)
+            if id_value is None:
+                return base_path
+            else:
+                return base_path + _ID_SEPARATOR + str(id_value)
 
-        # ignore the first two tokens
-        current_path = uri.split(":", 2)[-1]
+        # ignore the first token
+        root_token_count = self.root_directory.uri.count(_PATH_SEPARATOR) + 1
+        current_path = uri.split(_PATH_SEPARATOR, root_token_count)[-1]
         if uri == self.root_directory.uri:
             directories = {"albums-by-artist": "Albums by Artist"}
             return [models.Ref.directory(uri=get_uri_path(uri_suffix),
@@ -65,29 +75,29 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         elif current_path == "albums-by-artist":
             # list all artists with albums
             album_artists = self.remote.get_sorted_album_artists()
-            return [models.Ref.directory(uri=get_uri_path("albums-by-artist",
-                                                          quoting(artist)),
-                                         name=artist)
+            return [models.Ref.directory(
+                        uri=get_uri_path("albums-by-artist",
+                                         id_value=quoting(artist)),
+                        name=artist)
                     for artist in album_artists]
-        elif current_path.startswith("albums-by-artist:"):
-            artist = unquoting(current_path.split(":", 1)[1])
-            albums_of_artist = self.remote.get_albums_by_artist(artist)
-            albums_of_artist.sort(key=(lambda item: item["albumartist_sort"]))
-            return [models.Ref.directory(uri=get_uri_path("album",
-                                                          str(album["id"])),
-                                         name=album["album"])
+        elif current_path.startswith("albums-by-artist" + _ID_SEPARATOR):
+            artist = unquoting(current_path.split(_ID_SEPARATOR, 1)[1])
+            albums_of_artist = self.remote.get_albums_by(
+                [("albumartist", artist)], True, ["original_year+", "year+"])
+            return [models.Ref.directory(uri=album.uri, name=album.name)
                     for album in albums_of_artist]
-        elif current_path.startswith("album:"):
-            album_id = int(current_path.split(":", 1)[1])
-            tracks_of_album = self.remote.get_tracks_by_album_id(album_id)
-            tracks_of_album.sort(key=(lambda item: item.track_no))
+        elif current_path.startswith("album" + _ID_SEPARATOR):
+            album_id = int(current_path.split(_ID_SEPARATOR, 1)[1])
+            tracks = self.remote.get_tracks_by([("album_id", album_id)], True,
+                                               ["track+"])
             return [models.Ref.track(uri=track.uri, name=track.name)
-                    for track in tracks_of_album]
+                    for track in tracks]
         else:
             logger.error('Invalid browse URI: %s / %s', uri, current_path)
             return []
 
     def search(self, query=None, uris=None, exact=False):
+        # TODO: add Album search
         logger.debug('Query "%s":' % query)
         if not self.remote.has_connection:
             return []
