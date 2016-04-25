@@ -169,7 +169,7 @@ class BeetsRemoteClient(object):
         return [name for name in names if name]
 
     @cache()
-    def get_sorted_unique_album_attributes(self, field, ignore_empty):
+    def get_sorted_unique_album_attributes(self, field):
         """ returns all artists, genres, ... of tracks """
         sorted_albums = self._get('/album/query/{0}+'.format(field))["results"]
         # remove all duplicates
@@ -177,8 +177,7 @@ class BeetsRemoteClient(object):
         previous_value = None
         for album in sorted_albums:
             if previous_value != album[field]:
-                if album[field] or not ignore_empty:
-                    result.append(album[field])
+                result.append(album[field])
                 previous_value = album[field]
         return result
 
