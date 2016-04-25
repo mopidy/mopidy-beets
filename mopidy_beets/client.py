@@ -133,11 +133,11 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_artists(self):
-        res = self._get('/artist/')
-        try:
-            return res[u'artist_names']
-        except KeyError:
-            return []
+        """ returns all artists of one or more tracks """
+        names = self._get('/artist/')['artist_names']
+        names.sort()
+        # remove empty names
+        return [name for name in names if name]
 
     @cache()
     def get_tracks_by_album_id(self, album_id):
@@ -156,14 +156,17 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_sorted_album_artists(self):
-        albums = self._get('/album/')["albums"]
-        # create a dictionary of artist -> artist_sorting
-        # Meanwhile remove duplicates and filter empty artist fields.
-        artists_sorter_dict = {album["albumartist"]: album["albumartist_sort"]
-                               for album in albums if album["albumartist"]}
-        # sort the keys according to their dict values
-        return sorted(artists_sorter_dict.keys(),
-                      key=lambda item: artists_sorter_dict[item])
+        """ returns all artists of tracks """
+        sorted_albums = self._get('/album/query/albumartist_sort+')["results"]
+        # remove all duplicates
+        result = []
+        previous_artist = None
+        for album in sorted_albums:
+            if previous_artist != album["albumartist"]:
+                if album["albumartist"]:
+                    result.append(album["albumartist"])
+                previous_artist = album["albumartist"]
+        return result
 
     @cache()
     def get_albums_by(self, name):
