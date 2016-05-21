@@ -71,8 +71,7 @@ class BeetsRemoteClient(object):
 
     @cache(ctl=16)
     def get_track(self, track_id, remote_url=False):
-        return parse_track(self._get('/item/%s' % track_id), self.api_endpoint,
-                           remote_url)
+        return parse_track(self._get('/item/%s' % track_id), self, remote_url)
 
     @cache(ctl=16)
     def get_album(self, album_id):
@@ -181,6 +180,12 @@ class BeetsRemoteClient(object):
                 previous_value = album[field]
         return result
 
+    def get_track_stream_url(self, track_id):
+        return '{0}/item/{1}/file'.format(self.api_endpoint, track_id)
+
+    def get_album_art_url(self, album_id):
+        return '{0}/album/{1}/art'.format(self.api_endpoint, album_id)
+
     def _get(self, url):
         url = self.api_endpoint + url
         logger.debug('Requesting %s' % url)
@@ -209,7 +214,7 @@ class BeetsRemoteClient(object):
         tracks = []
         for dataset in (track_datasets or []):
             try:
-                tracks.append(parse_track(dataset, self.api_endpoint))
+                tracks.append(parse_track(dataset, self))
             except (ValueError, KeyError) as exc:
                 logger.info("Failed to parse track data: %s", exc)
         return [track for track in tracks if track]

@@ -21,7 +21,7 @@ def parse_artist(data, is_album=False):
         return None
 
 
-def parse_album(data, api_url):
+def parse_album(data, api):
     if not data:
         return None
     album_kwargs = {}
@@ -32,7 +32,7 @@ def parse_album(data, api_url):
     if 'mb_albumid' in data:
         album_kwargs['musicbrainz_id'] = data['mb_albumid']
     if 'album_id' in data:
-        album_art_url = '%s/album/%s/art'.format(api_url, data['album_id'])
+        album_art_url = api.get_album_art_url(data['album_id'])
         album_kwargs['images'] = [album_art_url]
     # TODO: retrieve the base URI from the current library
     album_kwargs['uri'] = assemble_uri("beets:library:album",
@@ -43,7 +43,7 @@ def parse_album(data, api_url):
     return Album(**album_kwargs)
 
 
-def parse_track(data, api_url, remote_url=False):
+def parse_track(data, api, remote_url=False):
     if not data:
         return None
     track_kwargs = {}
@@ -55,11 +55,13 @@ def parse_track(data, api_url, remote_url=False):
         track_kwargs['date'] = data['date']
     if 'mb_trackid' in data:
         track_kwargs['musicbrainz_id'] = data['mb_trackid']
+    if 'album_id' in data:
+        track_kwargs['album'] = api.get_album(data['album_id'])
     artist = parse_artist(data)
     if artist:
         track_kwargs['artists'] = [artist]
     if remote_url:
-        track_kwargs['uri'] = '%s/item/%s/file' % (api_url, data['id'])
+        track_kwargs['uri'] = api.get_track_stream_url(data['id'])
     else:
         track_kwargs['uri'] = 'beets:track;%s' % data['id']
     track_kwargs['length'] = int(data.get('length', 0)) * 1000
