@@ -79,32 +79,6 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             browser = browser_class(ref, self.remote)
             self.category_browsers.append(browser)
 
-    def _find_exact(self, query=None, uris=None):
-        if not query:
-            # Fetch all artists (browse library)
-            return SearchResult(
-                uri='beets:search',
-                tracks=self.remote.get_artists())
-        else:
-            results = []
-            if 'artist' in query:
-                results.append(self.remote.get_tracks_by_artist(
-                        query['artist'][0]))
-            if 'album' in query:
-                results.append(self.remote.get_tracks_by_title(
-                        query['album'][0]))
-            if len(results) > 1:
-                # return only albums that match all restrictions
-                results_set = set(results.pop(0))
-                while results:
-                    results_set.intersection_update(set(results.pop(0)))
-                tracks = list(results_set)
-            elif len(results) == 1:
-                tracks = results[0]
-            else:
-                tracks = []
-        return SearchResult(uri='beets:tracks', tracks=tracks)
-
     def browse(self, uri):
         parsed = parse_uri(uri, uri_prefix=self.root_directory.uri)
         if not parsed:
