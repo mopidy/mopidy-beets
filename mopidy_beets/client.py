@@ -94,29 +94,29 @@ class BeetsRemoteClient(object):
                 /item/query/album_id:183/track:2
                 /item/query/album:Foo
                 /album/query/track_no:12/year+/month+
-            Text-based matches (e.g. "album" or "artist") are case-independent
-            "is in" matches. Thus we need to filter the result, since we want
+            Text-based matches (e.g. 'album' or 'artist') are case-independent
+            'is in' matches. Thus we need to filter the result, since we want
             exact matches.
 
             @param attributes: attributes to be matched
             @type attribute: list of key/value pairs or strings
             @param exact_text: True for exact matches, False for
-                               case-insensitive "is in" matches (only relevant
+                               case-insensitive 'is in' matches (only relevant
                                for text values - not integers)
             @type exact_text: bool
-            @param sort_fields: fieldnames, each followed by "+" or "-"
+            @param sort_fields: fieldnames, each followed by '+' or '-'
             @type sort_fields: list of strings
             @rtype: list of json datasets describing tracks or albums
         """
         # assemble the query string
         query_parts = []
-        # only used for "exact_text"
+        # only used for 'exact_text'
         exact_query_list = []
 
         def quote_and_encode(text):
             # utf-8 seems to be necessary for Python 2.7 and urllib.quote
             if isinstance(text, unicode):
-                text = text.encode("utf-8")
+                text = text.encode('utf-8')
             elif isinstance(text, (int, float)):
                 text = str(text)
             # quoting for the query string
@@ -132,20 +132,20 @@ class BeetsRemoteClient(object):
                 # returns lower case attributes
                 key = quote_and_encode(attribute[0].lower())
                 value = quote_and_encode(attribute[1])
-                query_parts.append("{0}:{1}".format(key, value))
+                query_parts.append('{0}:{1}'.format(key, value))
             exact_query_list.append((key, value))
         # add sorting fields
         for sort_field in (sort_fields or []):
-            if (len(sort_field) > 1) and (sort_field[-1] in ("-", "+")):
+            if (len(sort_field) > 1) and (sort_field[-1] in ('-', '+')):
                 query_parts.append(quote_and_encode(sort_field))
             else:
-                logger.info("Beets - invalid sorting field ignore: %s",
+                logger.info('Beets - invalid sorting field ignore: %s',
                             sort_field)
-        query_string = "/".join(query_parts)
-        logger.debug("Beets query: %s", query_string)
-        items = self._get(base_path + query_string)["results"]
+        query_string = '/'.join(query_parts)
+        logger.debug('Beets query: %s', query_string)
+        items = self._get(base_path + query_string)['results']
         if exact_text:
-            # verify that text attributes do not just test "is in", but match
+            # verify that text attributes do not just test 'is in', but match
             # equality
             for key, value in exact_query_list:
                 if key is None:
@@ -168,7 +168,7 @@ class BeetsRemoteClient(object):
     @cache()
     def get_sorted_unique_album_attributes(self, field):
         """ returns all artists, genres, ... of tracks """
-        sorted_albums = self._get('/album/query/{0}+'.format(field))["results"]
+        sorted_albums = self._get('/album/query/{0}+'.format(field))['results']
         # remove all duplicates
         result = []
         previous_value = None
@@ -205,7 +205,7 @@ class BeetsRemoteClient(object):
             try:
                 albums.append(parse_album(dataset, self.api_endpoint))
             except (ValueError, KeyError) as exc:
-                logger.info("Failed to parse album data: %s", exc)
+                logger.info('Failed to parse album data: %s', exc)
         return [album for album in albums if album]
 
     def _parse_multiple_tracks(self, track_datasets):
@@ -214,5 +214,5 @@ class BeetsRemoteClient(object):
             try:
                 tracks.append(parse_track(dataset, self))
             except (ValueError, KeyError) as exc:
-                logger.info("Failed to parse track data: %s", exc)
+                logger.info('Failed to parse track data: %s', exc)
         return [track for track in tracks if track]

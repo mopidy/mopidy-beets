@@ -9,12 +9,12 @@ logger = logging.getLogger(__name__)
 
 def parse_artist(data, is_album=False):
     kwargs = {}
-    name_key = "albumartist" if is_album else "artist"
-    mb_id_key = "mb_albumartistid" if is_album else "mb_artistid"
+    name_key = 'albumartist' if is_album else 'artist'
+    mb_id_key = 'mb_albumartistid' if is_album else 'mb_artistid'
     if name_key in data:
-        kwargs["name"] = data[name_key]
+        kwargs['name'] = data[name_key]
     if mb_id_key in data:
-        kwargs["musicbrainz_id"] = data[mb_id_key]
+        kwargs['musicbrainz_id'] = data[mb_id_key]
     if kwargs:
         return Artist(**kwargs)
     else:
@@ -35,7 +35,7 @@ def parse_album(data, api):
         album_art_url = api.get_album_art_url(data['album_id'])
         album_kwargs['images'] = [album_art_url]
     # TODO: retrieve the base URI from the current library
-    album_kwargs['uri'] = assemble_uri("beets:library:album",
+    album_kwargs['uri'] = assemble_uri('beets:library:album',
                                        id_value=data['id'])
     artist = parse_artist(data, is_album=True)
     if artist:
@@ -80,36 +80,36 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
             * the match is valid only if the prefix is separated from the
               remainder of the URI with a color, an ampersand or it is equal
               to the full URI
-            * the function returns "None" if the uri_prefix cannot be removed
+            * the function returns 'None' if the uri_prefix cannot be removed
               (you should consider this an error condition)
 
         id_type (optional):
-            * convert the parsed id value by calling the "id_type" (e.g. "int")
+            * convert the parsed id value by calling the 'id_type' (e.g. 'int')
 
         The result of the function is a tuple of the uri and the id value.
         In case of an error the result is simply None.
     """
-    if ";" in uri:
-        result_uri, id_string = uri.split(";", 1)
+    if ';' in uri:
+        result_uri, id_string = uri.split(';', 1)
     else:
         result_uri, id_string = uri, None
     if uri_prefix:
         if uri == uri_prefix:
-            result_uri = ""
-        elif result_uri.startswith(uri_prefix + ":"):
+            result_uri = ''
+        elif result_uri.startswith(uri_prefix + ':'):
             result_uri = result_uri[len(uri_prefix) + 1:]
         else:
             # this prefix cannot be splitted
-            logger.info("Failed to remove URI prefix (%s): %s",
+            logger.info('Failed to remove URI prefix (%s): %s',
                         uri_prefix, uri)
             return None
     if id_string:
-        id_value = urllib.unquote(id_string.encode("ascii")).decode("utf-8")
+        id_value = urllib.unquote(id_string.encode('ascii')).decode('utf-8')
         if id_type:
             try:
                 id_value = id_type(id_value)
             except ValueError:
-                logger.info("Failed to parse ID (%s) from uri: %s",
+                logger.info('Failed to parse ID (%s) from uri: %s',
                             type(id_type), uri)
                 return None
     else:
@@ -118,13 +118,13 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
 
 
 def assemble_uri(*args, **kwargs):
-    base_path = ":".join(args)
-    id_value = kwargs.pop("id_value", None)
+    base_path = ':'.join(args)
+    id_value = kwargs.pop('id_value', None)
     if id_value is None:
         return base_path
     else:
         # convert numbers and other non-strings
         if not isinstance(id_value, (str, unicode)):
             id_value = str(id_value)
-        id_string = urllib.quote(id_value.encode("utf-8"))
-        return "%s;%s" % (base_path, id_string)
+        id_string = urllib.quote(id_value.encode('utf-8'))
+        return '%s;%s' % (base_path, id_string)

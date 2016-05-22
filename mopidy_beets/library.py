@@ -29,7 +29,7 @@ class AlbumCategoryBrowser:
     def get_label(self, album):
         artist_names = [artist.name for artist in album.artists]
         if artist_names:
-            return " - ".join([" / ".join(artist_names), album.name])
+            return ' - '.join([' / '.join(artist_names), album.name])
         else:
             return album.name
 
@@ -41,31 +41,31 @@ class AlbumCategoryBrowser:
 
 
 class AlbumByArtistBrowser(AlbumCategoryBrowser):
-    field = "albumartist"
-    sort_fields = ("original_year+", "year+", "album+")
+    field = 'albumartist'
+    sort_fields = ('original_year+', 'year+', 'album+')
 
     def get_label(self, album):
         return album.name
 
 
 class AlbumByGenreBrowser(AlbumCategoryBrowser):
-    field = "genre"
-    sort_fields = ("album+", )
+    field = 'genre'
+    sort_fields = ('album+', )
 
 
 class AlbumByYearBrowser(AlbumCategoryBrowser):
-    field = "year"
-    sort_fields = ("month+", "day+", "album+")
+    field = 'year'
+    sort_fields = ('month+', 'day+', 'album+')
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
 
-    root_directory = models.Ref.directory(uri="beets:library",
+    root_directory = models.Ref.directory(uri='beets:library',
                                           name='Beets library')
     root_categorie_list = [
-        ("albums-by-artist", "Albums by Artist", AlbumByArtistBrowser),
-        ("albums-by-genre", "Albums by Genre", AlbumByGenreBrowser),
-        ("albums-by-year", "Albums by Year", AlbumByYearBrowser),
+        ('albums-by-artist', 'Albums by Artist', AlbumByArtistBrowser),
+        ('albums-by-genre', 'Albums by Genre', AlbumByGenreBrowser),
+        ('albums-by-year', 'Albums by Year', AlbumByYearBrowser),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -82,22 +82,22 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         logger.debug('Browsing Beets at: %s', uri)
         parsed = parse_uri(uri, uri_prefix=self.root_directory.uri)
         if not parsed:
-            logger.error("Beets - failed to parse uri: %s", uri)
+            logger.error('Beets - failed to parse uri: %s', uri)
             return []
         elif uri == self.root_directory.uri:
             # top level - show the categories
             refs = [browser.ref for browser in self.category_browsers]
             refs.sort(key=lambda item: item.name)
             return refs
-        elif parsed[0] == "album":
+        elif parsed[0] == 'album':
             # show an album
             try:
                 album_id = parse_uri(uri, id_type=int)[1]
             except IndexError:
-                logger.error("Beets - invalid album ID in URI: %s", uri)
+                logger.error('Beets - invalid album ID in URI: %s', uri)
                 return []
-            tracks = self.remote.get_tracks_by([("album_id", album_id)], True,
-                                               ["track+"])
+            tracks = self.remote.get_tracks_by([('album_id', album_id)], True,
+                                               ['track+'])
             return [models.Ref.track(uri=track.uri, name=track.name)
                     for track in tracks]
         else:
@@ -140,16 +140,16 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 logger.info("Ignoring unknown query key: %s", field)
         logger.debug('Search query "%s":' % search_list)
         tracks = self.remote.get_tracks_by(search_list, exact, [])
-        uri = '-'.join([item if isinstance(item, str) else "=".join(item)
+        uri = '-'.join([item if isinstance(item, str) else '='.join(item)
                         for item in search_list])
         return SearchResult(uri='beets:search-' + uri, tracks=tracks)
 
     def lookup(self, uri=None, uris=None):
-        logger.debug('Beets lookup: %s', uri or uris)
+        logger.info('Beets lookup: %s', uri or uris)
         if uri:
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
-            track_ids = uri.split(";")[1:]
+            track_ids = uri.split(';')[1:]
             tracks = [self.remote.get_track(track_id, True)
                       for track_id in track_ids]
             # remove occourences of None
