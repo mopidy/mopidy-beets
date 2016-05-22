@@ -119,6 +119,9 @@ class BeetsRemoteClient(object):
                 text = text.encode('utf-8')
             elif isinstance(text, (int, float)):
                 text = str(text)
+            # Escape colons. The beets web API uses the colon to separate
+            # field name and search term.
+            text = text.replace(':', r'\:')
             # quoting for the query string
             return urllib.quote(text)
 
