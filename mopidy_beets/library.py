@@ -6,56 +6,11 @@ from mopidy import backend, models
 from mopidy.models import SearchResult
 
 from .translator import assemble_uri, parse_uri
+from .browsers.albums import AlbumsByArtistBrowser, AlbumsByGenreBrowser, \
+        AlbumsByYearBrowser
 
 
 logger = logging.getLogger(__name__)
-
-
-class AlbumsCategoryBrowser:
-
-    field = None
-    sort_fields = None
-    label_fields = None
-
-    def __init__(self, ref, api):
-        self.ref = ref
-        self.api = api
-
-    def get_toplevel(self):
-        keys = self.api.get_sorted_unique_album_attributes(self.field)
-        return [models.Ref.directory(name=unicode(key), uri=assemble_uri(
-            self.ref.uri, id_value=key)) for key in keys]
-
-    def get_label(self, album):
-        artist_names = [artist.name for artist in album.artists]
-        if artist_names:
-            return ' - '.join([' / '.join(artist_names), album.name])
-        else:
-            return album.name
-
-    def get_directory(self, key):
-        albums = self.api.get_albums_by([(self.field, key)], True,
-                                        self.sort_fields)
-        return [models.Ref.album(uri=album.uri, name=self.get_label(album))
-                for album in albums]
-
-
-class AlbumsByArtistBrowser(AlbumsCategoryBrowser):
-    field = 'albumartist'
-    sort_fields = ('original_year+', 'year+', 'album+')
-
-    def get_label(self, album):
-        return album.name
-
-
-class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
-    field = 'genre'
-    sort_fields = ('album+', )
-
-
-class AlbumsByYearBrowser(AlbumsCategoryBrowser):
-    field = 'year'
-    sort_fields = ('month+', 'day+', 'album+')
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
