@@ -169,18 +169,20 @@ class BeetsRemoteClient(object):
         # remove empty names
         return [name for name in names if name]
 
-    @cache()
+    def get_sorted_unique_track_attributes(self, field):
+        sort_field = {'albumartist': 'albumartist_sort'}.get(field, field)
+        return self._get_unique_attribute_values('/item/query/', field, sort_field)
+
     def get_sorted_unique_album_attributes(self, field):
-        """ returns all artists, genres, ... of tracks """
-        sorted_albums = self._get('/album/query/{0}+'.format(field))['results']
-        # remove all duplicates
-        result = []
-        previous_value = None
-        for album in sorted_albums:
-            if previous_value != album[field]:
-                result.append(album[field])
-                previous_value = album[field]
-        return result
+        sort_field = {'albumartist': 'albumartist_sort'}.get(field, field)
+        return self._get_unique_attribute_values('/album/query/', field, sort_field)
+
+    @cache(ctl=32)
+    def _get_unique_attribute_values(self, base_url, field, sort_field):
+        """ returns all artists, genres, ... of tracks or albums """
+        sorted_items = self._get('{0}{1}+'.format(base_url, sort_field))['results']
+        # remove all duplicates (using a generator)
+        return set((item[field] for item in sorted_items))
 
     def get_track_stream_url(self, track_id):
         return '{0}/item/{1}/file'.format(self.api_endpoint, track_id)
