@@ -36,7 +36,7 @@ class AlbumCategoryBrowser:
     def get_directory(self, key):
         albums = self.api.get_albums_by([(self.field, key)], True,
                                         self.sort_fields)
-        return [models.Ref.directory(uri=album.uri, name=self.get_label(album))
+        return [models.Ref.album(uri=album.uri, name=self.get_label(album))
                 for album in albums]
 
 
