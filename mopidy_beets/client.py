@@ -4,9 +4,11 @@ import logging
 import time
 import urllib
 
+from mopidy import httpclient
 import requests
 from requests.exceptions import RequestException
 
+import mopidy_beets
 from .translator import parse_album, parse_track
 
 
@@ -49,9 +51,9 @@ class cache(object):
 
 class BeetsRemoteClient(object):
 
-    def __init__(self, endpoint):
+    def __init__(self, endpoint, proxy_config):
         super(BeetsRemoteClient, self).__init__()
-        self.api = requests.Session()
+        self.api = self._get_session(proxy_config)
         self.api_endpoint = endpoint
         logger.info('Connecting to Beets remote library %s', endpoint)
         try:
@@ -60,6 +62,15 @@ class BeetsRemoteClient(object):
         except RequestException as e:
             logger.error('Beets error - connection failed: %s', e)
             self.has_connection = False
+
+    def _get_session(self, proxy_config):
+        proxy = httpclient.format_proxy(proxy_config)
+        full_user_agent = httpclient.format_user_agent('/'.join((
+            mopidy_beets.BeetsExtension.dist_name, mopidy_beets.__version__)))
+        session = requests.Session()
+        session.proxies.update({'http': proxy, 'https': proxy})
+        session.headers.update({'user-agent': full_user_agent})
+        return session
 
     @cache()
     def get_tracks(self):
