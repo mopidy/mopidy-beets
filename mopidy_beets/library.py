@@ -113,7 +113,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         return SearchResult(uri='beets:search-' + uri, tracks=tracks)
 
     def lookup(self, uri=None, uris=None):
-        logger.info('Beets lookup: %s', uri or uris)
+        logger.debug('Beets lookup: %s', uri or uris)
         if uri:
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
@@ -125,6 +125,13 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         else:
             # the newer method (mopidy >= 1.0): return a dict of uris and tracks
             return {uri: self.lookup(uri=uri) for uri in uris}
+
+    def get_distinct(self, field, query=None):
+        logger.debug("Beets distinct query: %s (uri=%s)", field, query)
+        if not self.remote.has_connection:
+            return []
+        else:
+            return self.remote.get_sorted_unique_track_attributes(field)
 
     def _validate_query(self, query):
         for values in query.values():
