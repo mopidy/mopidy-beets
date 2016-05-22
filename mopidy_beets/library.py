@@ -118,7 +118,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         logger.debug('Beets Query (exact=%s) within "%s": %s',
                      exact, uris, query)
         if not self.remote.has_connection:
-            return []
+            return SearchResult(uri='beets:search-disconnected', tracks=[])
 
         self._validate_query(query)
         search_list = []
