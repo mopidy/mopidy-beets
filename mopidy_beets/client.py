@@ -182,16 +182,38 @@ class BeetsRemoteClient(object):
 
     def get_sorted_unique_track_attributes(self, field):
         sort_field = {'albumartist': 'albumartist_sort'}.get(field, field)
-        return self._get_unique_attribute_values('/item/query/', field, sort_field)
+        return self._get_unique_attribute_values('/item', field, sort_field)
 
     def get_sorted_unique_album_attributes(self, field):
         sort_field = {'albumartist': 'albumartist_sort'}.get(field, field)
-        return self._get_unique_attribute_values('/album/query/', field, sort_field)
+        return self._get_unique_attribute_values('/album', field, sort_field)
 
     @cache(ctl=32)
     def _get_unique_attribute_values(self, base_url, field, sort_field):
         """ returns all artists, genres, ... of tracks or albums """
-        sorted_items = self._get('{0}{1}+'.format(base_url, sort_field))['results']
+        if not hasattr(self, "__legacy_beets_api_detected"):
+            try:
+                result = self._get('{0}/unique/{1}/{2}'
+                                   .format(base_url, field, sort_field),
+                                   raise_not_found=True)
+            except KeyError:
+                # The above URL was added to the Beets API after v1.3.17
+                # Probably we are working against an older version.
+                logging.warning(
+                    'Failed to use the /item/unique/KEY feature of the Beets '
+                    'API (introduced after v1.3.17). Falling back to the '
+                    'slower and more ressource intensive manual approach. '
+                    'Please upgrade Beets, if possible.')
+                # Warn only once and use the manual approach for all future
+                # requests.
+                self.__legacy_beets_api_detected = True
+                # continue below with the fallback
+            else:
+                return result['values']
+        # Fallback: use manual filtering (requires too much time and memory for
+        # most collections).
+        sorted_items = self._get('{0}/query/{1}+'
+                                 .format(base_url, sort_field))['results']
         # remove all duplicates (using a generator)
         return set((item[field] for item in sorted_items))
 
@@ -201,7 +223,7 @@ class BeetsRemoteClient(object):
     def get_album_art_url(self, album_id):
         return '{0}/album/{1}/art'.format(self.api_endpoint, album_id)
 
-    def _get(self, url):
+    def _get(self, url, raise_not_found=False):
         url = self.api_endpoint + url
         logger.debug('Requesting %s' % url)
         try:
@@ -212,7 +234,11 @@ class BeetsRemoteClient(object):
         if req.status_code != 200:
             logger.error('Request %s, failed with status code %s',
                          url, req.status_code)
-            return None
+            if (req.status_code == 404) and raise_not_found:
+                # sometime we need to distinguish between empty and "not found"
+                raise KeyError("Failed to retrieve URL: %s", e)
+            else:
+                return None
         else:
             return req.json()
 
