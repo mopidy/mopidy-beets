@@ -127,13 +127,14 @@ class BeetsRemoteClient(object):
                 key = None
                 value = quote_and_encode(attribute)
                 query_parts.append(value)
+                exact_query_list.append((None, attribute))
             else:
                 # the beets API accepts upper and lower case, but always
                 # returns lower case attributes
                 key = quote_and_encode(attribute[0].lower())
                 value = quote_and_encode(attribute[1])
                 query_parts.append('{0}:{1}'.format(key, value))
-            exact_query_list.append((key, value))
+                exact_query_list.append((attribute[0].lower(), attribute[1]))
         # add sorting fields
         for sort_field in (sort_fields or []):
             if (len(sort_field) > 1) and (sort_field[-1] in ('-', '+')):
