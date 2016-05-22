@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class BeetsBackend(pykka.ThreadingActor, backend.Backend):
+    uri_schemes = ['beets']
 
     def __init__(self, config, audio):
         super(BeetsBackend, self).__init__()
@@ -25,8 +26,6 @@ class BeetsBackend(pykka.ThreadingActor, backend.Backend):
         self.library = BeetsLibraryProvider(backend=self)
         self.playback = BeetsPlaybackProvider(audio=audio, backend=self)
         self.playlists = None
-
-        self.uri_schemes = ['beets']
 
 
 class BeetsPlaybackProvider(backend.PlaybackProvider):
