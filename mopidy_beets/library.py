@@ -79,15 +79,18 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             self.category_browsers.append(browser)
 
     def browse(self, uri):
+        logger.debug('Browsing Beets at: %s', uri)
         parsed = parse_uri(uri, uri_prefix=self.root_directory.uri)
         if not parsed:
             logger.error("Beets - failed to parse uri: %s", uri)
             return []
         elif uri == self.root_directory.uri:
+            # top level - show the categories
             refs = [browser.ref for browser in self.category_browsers]
             refs.sort(key=lambda item: item.name)
             return refs
         elif parsed[0] == "album":
+            # show an album
             try:
                 album_id = parse_uri(uri, id_type=int)[1]
             except IndexError:
@@ -98,6 +101,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             return [models.Ref.track(uri=track.uri, name=track.name)
                     for track in tracks]
         else:
+            # show a generic category directory
             parsed_uri, id_value = parse_uri(uri)
             for browser in self.category_browsers:
                 if parsed_uri == browser.ref.uri:
@@ -110,8 +114,9 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 return []
 
     def search(self, query=None, uris=None, exact=False):
-        # TODO: add Album search
-        logger.debug('Query "%s":' % query)
+        # TODO: restrict the result to 'uris'
+        logger.debug('Beets Query (exact=%s) within "%s": %s',
+                     exact, uris, query)
         if not self.remote.has_connection:
             return []
 
@@ -140,6 +145,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         return SearchResult(uri='beets:search-' + uri, tracks=tracks)
 
     def lookup(self, uri=None, uris=None):
+        logger.debug('Beets lookup: %s', uri or uris)
         if uri:
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons

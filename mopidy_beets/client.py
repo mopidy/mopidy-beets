@@ -149,11 +149,11 @@ class BeetsRemoteClient(object):
             # equality
             for key, value in exact_query_list:
                 if key is None:
-                    # the value must match one of the
+                    # the value must match one of the item attributes
                     items = [item for item in items if value in item.values()]
                 else:
                     # filtering is necessary only for text based attributes
-                    if items and isinstance(items[0][key], str):
+                    if items and isinstance(items[0][key], (str, unicode)):
                         items = [item for item in items if item[key] == value]
         return items
 
