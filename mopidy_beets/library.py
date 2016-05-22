@@ -115,11 +115,6 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         if not self.remote.has_connection:
             return []
 
-        if not query:
-            # Fetch all data(browse library)
-            return SearchResult(uri='beets:search',
-                                tracks=self.remote.get_tracks())
-
         self._validate_query(query)
         search_list = []
         for (field, val) in query.iteritems():
