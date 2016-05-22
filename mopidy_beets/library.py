@@ -145,12 +145,18 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                         for item in search_list])
         return SearchResult(uri='beets:search-' + uri, tracks=tracks)
 
-    def lookup(self, uri):
-        # TODO: verify if we should do the same for Albums
-        track_id = uri.split(";")[1]
-        logger.debug('Beets track id for "%s": %s' % (track_id, uri))
-        track = self.remote.get_track(track_id, True)
-        return [track] if track else []
+    def lookup(self, uri=None, uris=None):
+        if uri:
+            # the older method (mopidy < 1.0): return a list of tracks
+            # handle one or more tracks given with multiple semicolons
+            track_ids = uri.split(";")[1:]
+            tracks = [self.remote.get_track(track_id, True)
+                      for track_id in track_ids]
+            # remove occourences of None
+            return [track for track in tracks if track]
+        else:
+            # the newer method (mopidy >= 1.0): return a dict of uris and tracks
+            return {uri: self.lookup(uri=uri) for uri in uris}
 
     def _validate_query(self, query):
         for values in query.values():
