@@ -62,12 +62,11 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
     root_directory = models.Ref.directory(uri="beets:library",
                                           name='Beets library')
-    root_categorie_list = [("albums-by-artist", "Albums by Artist",
-                            AlbumByArtistBrowser),
-                           ("albums-by-genre", "Albums by Genre",
-                            AlbumByGenreBrowser),
-                           ("albums-by-year", "Albums by Year",
-                            AlbumByYearBrowser)]
+    root_categorie_list = [
+        ("albums-by-artist", "Albums by Artist", AlbumByArtistBrowser),
+        ("albums-by-genre", "Albums by Genre", AlbumByGenreBrowser),
+        ("albums-by-year", "Albums by Year", AlbumByYearBrowser),
+    ]
 
     def __init__(self, *args, **kwargs):
         super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
