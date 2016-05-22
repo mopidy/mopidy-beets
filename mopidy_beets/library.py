@@ -11,7 +11,7 @@ from .translator import assemble_uri, parse_uri
 logger = logging.getLogger(__name__)
 
 
-class AlbumCategoryBrowser:
+class AlbumsCategoryBrowser:
 
     field = None
     sort_fields = None
@@ -40,7 +40,7 @@ class AlbumCategoryBrowser:
                 for album in albums]
 
 
-class AlbumByArtistBrowser(AlbumCategoryBrowser):
+class AlbumsByArtistBrowser(AlbumsCategoryBrowser):
     field = 'albumartist'
     sort_fields = ('original_year+', 'year+', 'album+')
 
@@ -48,12 +48,12 @@ class AlbumByArtistBrowser(AlbumCategoryBrowser):
         return album.name
 
 
-class AlbumByGenreBrowser(AlbumCategoryBrowser):
+class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
     field = 'genre'
     sort_fields = ('album+', )
 
 
-class AlbumByYearBrowser(AlbumCategoryBrowser):
+class AlbumsByYearBrowser(AlbumsCategoryBrowser):
     field = 'year'
     sort_fields = ('month+', 'day+', 'album+')
 
@@ -63,9 +63,9 @@ class BeetsLibraryProvider(backend.LibraryProvider):
     root_directory = models.Ref.directory(uri='beets:library',
                                           name='Beets library')
     root_categorie_list = [
-        ('albums-by-artist', 'Albums by Artist', AlbumByArtistBrowser),
-        ('albums-by-genre', 'Albums by Genre', AlbumByGenreBrowser),
-        ('albums-by-year', 'Albums by Year', AlbumByYearBrowser),
+        ('albums-by-artist', 'Albums by Artist', AlbumsByArtistBrowser),
+        ('albums-by-genre', 'Albums by Genre', AlbumsByGenreBrowser),
+        ('albums-by-year', 'Albums by Year', AlbumsByYearBrowser),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -122,23 +122,36 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
         self._validate_query(query)
         search_list = []
-        for (field, val) in query.iteritems():
-            if field == "any":
-                search_list.append(val[0])
-            elif field == "album":
-                search_list.append(("album", val[0]))
-            elif field == "artist":
-                search_list.append(("artist", val[0]))
-            elif field == "track_name":
-                search_list.append(("title", val[0]))
-            elif field == "date":
-                # TODO: there is no "date" in beets - just "day", "month"
-                #       and "year". Determine the format of "date" and
-                #       define a suitable date format string?
-                search_list.append(("date", val[0]))
-            else:
-                logger.info("Ignoring unknown query key: %s", field)
-        logger.debug('Search query "%s":' % search_list)
+        for (field, values) in query.items():
+            for val in values:
+                # missing / unsupported fields: uri, performer
+                if field == 'any':
+                    search_list.append(val)
+                elif field == 'album':
+                    search_list.append(('album', val))
+                elif field == 'artist':
+                    search_list.append(('artist', val))
+                elif field == 'albumartist':
+                    search_list.append(('albumartist', val))
+                elif field == 'track_name':
+                    search_list.append(('title', val))
+                elif field == 'track_no':
+                    search_list.append(('track', val))
+                elif field == 'composer':
+                    search_list.append(('composer', val))
+                elif field == 'genre':
+                    search_list.append(('genre', val))
+                elif field == 'comment':
+                    search_list.append(('comments', val))
+                elif field == 'date':
+                    # TODO: there is no 'date' in beets - just 'day', 'month'
+                    #       and 'year'. Determine the format of 'date' and
+                    #       define a suitable date format string?
+                    search_list.append(('date', val))
+                else:
+                    logger.info('Beets: ignoring unknown query key: %s', field)
+                    break
+        logger.debug('Search query: %s', search_list)
         tracks = self.remote.get_tracks_by(search_list, exact, [])
         uri = '-'.join([item if isinstance(item, str) else '='.join(item)
                         for item in search_list])
