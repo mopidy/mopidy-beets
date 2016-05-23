@@ -89,13 +89,13 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_tracks_by(self, attributes, exact_text, sort_fields):
-        tracks = self._get_objects_by_attribute('/item/query/', attributes,
+        tracks = self._get_objects_by_attribute('/item', attributes,
                                                 exact_text, sort_fields)
         return self._parse_multiple_tracks(tracks)
 
     @cache()
     def get_albums_by(self, attributes, exact_text, sort_fields):
-        albums = self._get_objects_by_attribute('/album/query/', attributes,
+        albums = self._get_objects_by_attribute('/album', attributes,
                                                 exact_text, sort_fields)
         return self._parse_multiple_albums(albums)
 
@@ -158,7 +158,8 @@ class BeetsRemoteClient(object):
                             sort_field)
         query_string = '/'.join(query_parts)
         logger.debug('Beets query: %s', query_string)
-        items = self._get(base_path + query_string)['results']
+        items = self._get("{0}/query/{1}"
+                          .format(base_path, query_string))['results']
         if exact_text:
             # verify that text attributes do not just test 'is in', but match
             # equality
