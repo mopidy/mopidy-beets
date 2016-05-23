@@ -5,11 +5,12 @@ import time
 import urllib
 
 from mopidy import httpclient
+
 import requests
 from requests.exceptions import RequestException
 
 import mopidy_beets
-from .translator import parse_album, parse_track
+from mopidy_beets.translator import parse_album, parse_track
 
 
 logger = logging.getLogger(__name__)

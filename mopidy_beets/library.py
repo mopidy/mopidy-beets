@@ -6,9 +6,9 @@ import re
 from mopidy import backend, models
 from mopidy.models import SearchResult
 
-from .translator import assemble_uri, parse_uri
-from .browsers.albums import AlbumsByArtistBrowser, AlbumsByGenreBrowser, \
-        AlbumsByYearBrowser
+from mopidy_beets.browsers.albums import (
+    AlbumsByArtistBrowser, AlbumsByGenreBrowser, AlbumsByYearBrowser)
+from mopidy_beets.translator import assemble_uri, parse_uri
 
 
 logger = logging.getLogger(__name__)
@@ -134,11 +134,12 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
             track_ids = uri.split(';')[1:]
-            tracks = [self.remote.get_track(track_id) for track_id in track_ids]
+            tracks = [
+                self.remote.get_track(track_id) for track_id in track_ids]
             # remove occourences of None
             return [track for track in tracks if track]
         else:
-            # the newer method (mopidy >= 1.0): return a dict of uris and tracks
+            # the newer method (mopidy>=1.0): return a dict of uris and tracks
             return {uri: self.lookup(uri=uri) for uri in uris}
 
     def get_distinct(self, field, query=None):
