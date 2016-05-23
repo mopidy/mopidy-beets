@@ -19,7 +19,7 @@ Mopidy-Beets
    :alt: Test coverage
 
 `Mopidy <http://www.mopidy.com/>`_ extension for playing music from
-`Beets <http://beets.radbox.org/>`_ via Beets' web extension.
+`Beets <http://beets.io/>`_ via Beets' web extension.
 
 
 Installation
@@ -50,13 +50,44 @@ Configuration
 
 #. Searches in Mopidy will now return results from your Beets library.
 
+Proxy Configuration for OGG files (optional)
+--------------------------------------------
+
+You may want to configure an http proxy server in front of your beets
+installation. Otherwise you could have problems with playing OGG files and
+other formats that require seeking (in technical terms: support for http
+"Range" requests is required for these files).
+
+The following Nginx configuration snippet is sufficent:
+
+    server {
+        listen 127.0.0.1:8889;
+        root /usr/share/beets/beetsplug/web;
+        server_name beets.local;
+        location / {
+            proxy_pass http://localhost:8888;
+            # this statement forces Nginx to emulate "Range" responses
+            proxy_force_ranges on;
+        }
+    }
+
+Now you should change the mopidy configuration accordingly to point to the
+Nginx port above intead of the Beets port. Afterwards mopidy will be able to
+play back file formats that require seeking.
+
 
 Usage
 =====
 
 #. Run ``beet web`` to start the Beets web interface.
 
-#. Start Mopidy, and search or browse your Beets library with any Mopidy client.
+#. Start Mopidy and access your Beets library via any Mopidy client:
+
+   * Browse your collection by album
+
+   * Search for tracks or albums
+
+   * Let the music play!
 
 
 Project resources
@@ -76,6 +107,15 @@ Credits
 
 Changelog
 =========
+
+v3.0.0 (??)
+-------------------
+
+- Support browsing albums by artist, genre and year
+
+- Improved search (more categories, more precise)
+
+- Align with Mopidy's current extension guidelines
 
 v2.0.0 (2015-03-25)
 -------------------
