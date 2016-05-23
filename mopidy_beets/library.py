@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 
 from mopidy import backend, models
 from mopidy.models import SearchResult
@@ -11,6 +12,11 @@ from .browsers.albums import AlbumsByArtistBrowser, AlbumsByGenreBrowser, \
 
 
 logger = logging.getLogger(__name__)
+
+# match dates of the following format:
+#   YYYY, YYYY-MM, YYYY-MM-DD, YYYY/MM, YYYY/MM/DD
+DATE_REGEX = re.compile(
+    r'^(?P<year>\d{4})(?:[-/](?P<month>\d{1,2})(?:[-/](?P<day>\d{1,2}))?)?$')
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
@@ -99,10 +105,20 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 elif field == 'comment':
                     search_list.append(('comments', val))
                 elif field == 'date':
-                    # TODO: there is no 'date' in beets - just 'day', 'month'
-                    #       and 'year'. Determine the format of 'date' and
-                    #       define a suitable date format string?
-                    search_list.append(('date', val))
+                    # supported date formats: YYYY, YYYY-MM, YYYY-MM-DD
+                    # Days and months may consist of one or two digits.
+                    # A slash (instead of a dash) is acceptable as a separator.
+                    match = DATE_REGEX.search(val)
+                    if match:
+                        # remove None values
+                        for key, value in match.groupdict().items():
+                            if value:
+                                search_list.append((key, int(value)))
+                    else:
+                        logger.info(
+                            'Beets search: ignoring unknown date format (%s). '
+                            'It should be "YYYY", "YYYY-MM" or "YYYY-MM-DD".',
+                            val)
                 else:
                     logger.info('Beets: ignoring unknown query key: %s', field)
                     break
