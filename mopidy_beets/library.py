@@ -118,8 +118,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
             track_ids = uri.split(';')[1:]
-            tracks = [self.remote.get_track(track_id, True)
-                      for track_id in track_ids]
+            tracks = [self.remote.get_track(track_id) for track_id in track_ids]
             # remove occourences of None
             return [track for track in tracks if track]
         else:

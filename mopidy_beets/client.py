@@ -79,8 +79,8 @@ class BeetsRemoteClient(object):
         return tracks
 
     @cache(ctl=16)
-    def get_track(self, track_id, remote_url=False):
-        return parse_track(self._get('/item/%s' % track_id), self, remote_url)
+    def get_track(self, track_id):
+        return parse_track(self._get('/item/%s' % track_id), self)
 
     @cache(ctl=16)
     def get_album(self, album_id):

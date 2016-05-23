@@ -43,7 +43,7 @@ def parse_album(data, api):
     return Album(**album_kwargs)
 
 
-def parse_track(data, api, remote_url=False):
+def parse_track(data, api):
     if not data:
         return None
     track_kwargs = {}
@@ -60,10 +60,7 @@ def parse_track(data, api, remote_url=False):
     artist = parse_artist(data)
     if artist:
         track_kwargs['artists'] = [artist]
-    if remote_url:
-        track_kwargs['uri'] = api.get_track_stream_url(data['id'])
-    else:
-        track_kwargs['uri'] = 'beets:track;%s' % data['id']
+    track_kwargs['uri'] = 'beets:track;%s' % data['id']
     track_kwargs['length'] = int(data.get('length', 0)) * 1000
     return Track(**track_kwargs)
 
