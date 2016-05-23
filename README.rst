@@ -18,8 +18,8 @@ Mopidy-Beets
    :target: https://coveralls.io/r/mopidy/mopidy-beets?branch=master
    :alt: Test coverage
 
-`Mopidy <http://www.mopidy.com/>`_ extension for playing music from
-`Beets <http://beets.io/>`_ via Beets' web extension.
+`Mopidy <http://www.mopidy.com/>`_ extension for browsing, searching and
+playing music from `Beets <http://beets.io/>`_ via Beets' web extension.
 
 
 Installation
@@ -58,7 +58,7 @@ installation. Otherwise you could have problems with playing OGG files and
 other formats that require seeking (in technical terms: support for http
 "Range" requests is required for these files).
 
-The following Nginx configuration snippet is sufficent:
+The following Nginx configuration snippet is sufficent::
 
     server {
         listen 127.0.0.1:8889;
@@ -73,7 +73,7 @@ The following Nginx configuration snippet is sufficent:
 
 Now you should change the mopidy configuration accordingly to point to the
 Nginx port above intead of the Beets port. Afterwards mopidy will be able to
-play back file formats that require seeking.
+play file formats that require seeking.
 
 
 Usage
