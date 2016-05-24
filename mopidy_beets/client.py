@@ -226,8 +226,18 @@ class BeetsRemoteClient(object):
     def get_track_stream_url(self, track_id):
         return '{0}/item/{1}/file'.format(self.api_endpoint, track_id)
 
+    @cache(ctl=32)
     def get_album_art_url(self, album_id):
-        return '{0}/album/{1}/art'.format(self.api_endpoint, album_id)
+        # Sadly we cannot determine, if the Beets library really contains album
+        # art. Thus we need to ask for it and check the status code.
+        url = '{0}/album/{1}/art'.format(self.api_endpoint, album_id)
+        try:
+            request = urllib.urlopen(url)
+        except IOError:
+            # DNS problem or similar
+            return None
+        request.close()
+        return url if request.getcode() == 200 else None
 
     def _get(self, url, raise_not_found=False):
         url = self.api_endpoint + url
