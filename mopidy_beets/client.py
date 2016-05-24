@@ -85,8 +85,7 @@ class BeetsRemoteClient(object):
 
     @cache(ctl=16)
     def get_album(self, album_id):
-        return parse_album(self._get('/album/%s' % album_id),
-                           self.api_endpoint)
+        return parse_album(self._get('/album/%s' % album_id), self)
 
     @cache()
     def get_tracks_by(self, attributes, exact_text, sort_fields):
@@ -248,7 +247,7 @@ class BeetsRemoteClient(object):
         albums = []
         for dataset in (album_datasets or []):
             try:
-                albums.append(parse_album(dataset, self.api_endpoint))
+                albums.append(parse_album(dataset, self))
             except (ValueError, KeyError) as exc:
                 logger.info('Failed to parse album data: %s', exc)
         return [album for album in albums if album]
