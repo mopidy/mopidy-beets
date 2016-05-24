@@ -7,62 +7,92 @@ from mopidy.models import Album, Artist, Track
 logger = logging.getLogger(__name__)
 
 
-def parse_artist(data, is_album=False):
-    kwargs = {}
-    name_key = 'albumartist' if is_album else 'artist'
-    mb_id_key = 'mb_albumartistid' if is_album else 'mb_artistid'
-    if name_key in data:
-        kwargs['name'] = data[name_key]
-    if mb_id_key in data:
-        kwargs['musicbrainz_id'] = data[mb_id_key]
-    if kwargs:
-        return Artist(**kwargs)
+def parse_date(data):
+    if 'year' in data:
+        if 'day' in data and 'month' in data:
+            return '{year:04d}-{month:02d}-{day:02d}'.format(**data)
+        else:
+            return '{year:04d}'.format(**data)
     else:
         return None
 
 
+def _apply_beets_mapping(target_class, mapping, data):
+    """ evaluate a mapping of target keys and their source keys or callables
+
+    'target_class' is the Mopidy model to be used for creating the item.
+    'mapping' is a dict of {'target': source}.
+    Here 'source' could be one of the following types:
+        * string: the key for the corresponding value in 'data'
+        * callable: a function with a dict ('data') as its only parameter
+    """
+    kwargs = {}
+    for key, map_value in mapping.items():
+        if map_value is None:
+            value = None
+        elif callable(map_value):
+            value = map_value(data)
+        else:
+            value = data.get(map_value, None)
+        # ignore None, empty strings or zeros (e.g. for length)
+        if value:
+            kwargs[key] = value
+    return target_class(**kwargs) if kwargs else None
+
+
+def parse_artist(data, is_album=False):
+    # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Artist
+    mapping = {
+        'uri': lambda d: assemble_uri('beets:library:artist',
+            id_value=d['albumartist' if is_album else 'artist']),
+        'name': 'albumartist' if is_album else 'artist',
+        'sortname': 'albumartist_sort' if is_album else 'artist_sort',
+        'musicbrainz_id': 'mb_albumartistid' if is_album else 'mb_artistid',
+    }
+    return _apply_beets_mapping(Artist, mapping, data)
+
+
 def parse_album(data, api):
-    if not data:
-        return None
-    album_kwargs = {}
-    if 'tracktotal' in data:
-        album_kwargs['num_tracks'] = int(data['tracktotal'])
-    if 'album' in data:
-        album_kwargs['name'] = data['album']
-    if 'mb_albumid' in data:
-        album_kwargs['musicbrainz_id'] = data['mb_albumid']
-    if 'album_id' in data:
-        album_art_url = api.get_album_art_url(data['album_id'])
-        album_kwargs['images'] = [album_art_url]
-    # TODO: retrieve the base URI from the current library
-    album_kwargs['uri'] = assemble_uri('beets:library:album',
-                                       id_value=data['id'])
-    artist = parse_artist(data, is_album=True)
-    if artist:
-        album_kwargs['artists'] = [artist]
-    return Album(**album_kwargs)
+    # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Album
+    # The order of items is based on the above documentation.
+    # Attributes without corresponding Beets data are mapped to 'None'.
+    mapping = {
+        'uri': lambda d: assemble_uri('beets:library:album', id_value=d['id']),
+        'name': 'album',
+        'artists': lambda d: [parse_artist(d, is_album=True)],
+        'num_tracks': 'tracktotal',
+        'num_discs': 'disctotal',
+        'date': lambda d: parse_date(d),
+        'musicbrainz_id': 'mb_albumid',
+        # TODO: 'images' is deprecated since v1.2 - move to Library.get_images()
+        'images': lambda d, api=api: [api.get_album_art_url(d['id'])],
+    }
+    return _apply_beets_mapping(Album, mapping, data)
 
 
 def parse_track(data, api):
-    if not data:
-        return None
-    track_kwargs = {}
-    if 'track' in data:
-        track_kwargs['track_no'] = int(data['track'])
-    if 'title' in data:
-        track_kwargs['name'] = data['title']
-    if 'date' in data:
-        track_kwargs['date'] = data['date']
-    if 'mb_trackid' in data:
-        track_kwargs['musicbrainz_id'] = data['mb_trackid']
-    if 'album_id' in data:
-        track_kwargs['album'] = api.get_album(data['album_id'])
-    artist = parse_artist(data)
-    if artist:
-        track_kwargs['artists'] = [artist]
-    track_kwargs['uri'] = 'beets:track;%s' % data['id']
-    track_kwargs['length'] = int(data.get('length', 0)) * 1000
-    return Track(**track_kwargs)
+    # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Track
+    # The order of items is based on the above documentation.
+    # Attributes without corresponding Beets data are mapped to 'None'.
+    mapping = {
+        'uri': lambda d: 'beets:track;%s' % d['id'],
+        'name': 'title',
+        'artists': lambda d: [parse_artist(d)],
+        'album': lambda d, api=api: api.get_album(d['album_id']) \
+            if 'album_id' in d else None,
+        'composers': 'composer',
+        'performers': None,
+        'genre': 'genre',
+        'track_no': 'track',
+        'disc_no': 'disc',
+        'date': lambda d: parse_date(d),
+        'length': lambda d: int(d.get('length', 0) * 1000),
+        'bitrate': lambda d: int(d.get('bitrate', 0) / 1000),
+        'comment': 'comments',
+        'musicbrainz_id': 'mb_trackid',
+        'last_modified': lambda d: int(d.get('mtime', 0)),
+    }
+    return _apply_beets_mapping(Track, mapping, data)
 
 
 def parse_uri(uri, uri_prefix=None, id_type=None):
