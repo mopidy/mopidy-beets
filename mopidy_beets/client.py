@@ -215,8 +215,13 @@ class BeetsRemoteClient(object):
         # most collections).
         sorted_items = self._get('{0}/query/{1}+'
                                  .format(base_url, sort_field))['results']
-        # remove all duplicates (using a generator)
-        return set((item[field] for item in sorted_items))
+        # extract the wanted field and remove all duplicates
+        unique_values = []
+        for item in sorted_items:
+            value = item[field]
+            if not unique_values or (value != unique_values[-1]):
+                unique_values.append(value)
+        return unique_values
 
     def get_track_stream_url(self, track_id):
         return '{0}/item/{1}/file'.format(self.api_endpoint, track_id)
