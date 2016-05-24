@@ -40,6 +40,10 @@ def _apply_beets_mapping(target_class, mapping, data):
     return target_class(**kwargs) if kwargs else None
 
 
+def _filter_none(values):
+    return [value for value in values if value is not None]
+
+
 def parse_artist(data, is_album=False):
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Artist
     mapping = {
@@ -59,13 +63,14 @@ def parse_album(data, api):
     mapping = {
         'uri': lambda d: assemble_uri('beets:library:album', id_value=d['id']),
         'name': 'album',
-        'artists': lambda d: [parse_artist(d, is_album=True)],
+        'artists': lambda d: _filter_none([parse_artist(d, is_album=True)]),
         'num_tracks': 'tracktotal',
         'num_discs': 'disctotal',
         'date': lambda d: parse_date(d),
         'musicbrainz_id': 'mb_albumid',
         # TODO: 'images' is deprecated since v1.2 - move to Library.get_images()
-        'images': lambda d, api=api: [api.get_album_art_url(d['id'])],
+        'images': lambda d, api=api: _filter_none(
+            [api.get_album_art_url(d['id'])]),
     }
     return _apply_beets_mapping(Album, mapping, data)
 
@@ -77,7 +82,7 @@ def parse_track(data, api):
     mapping = {
         'uri': lambda d: 'beets:track;%s' % d['id'],
         'name': 'title',
-        'artists': lambda d: [parse_artist(d)],
+        'artists': lambda d: _filter_none([parse_artist(d, is_album=False)]),
         'album': lambda d, api=api: api.get_album(d['album_id']) \
             if 'album_id' in d else None,
         'composers': 'composer',
