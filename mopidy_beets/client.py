@@ -194,7 +194,7 @@ class BeetsRemoteClient(object):
         """ returns all artists, genres, ... of tracks or albums """
         if not hasattr(self, "__legacy_beets_api_detected"):
             try:
-                result = self._get('{0}/unique/{1}/{2}'
+                result = self._get('{0}/values/{1}?sort_key={2}'
                                    .format(base_url, field, sort_field),
                                    raise_not_found=True)
             except KeyError:
