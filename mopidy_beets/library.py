@@ -133,9 +133,17 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         if uri:
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
-            track_ids = uri.split(';')[1:]
-            tracks = [
-                self.remote.get_track(track_id) for track_id in track_ids]
+            logger.debug("Beets lookup: %s", uri)
+            path, track_id = parse_uri(uri, id_type=int,
+                                       uri_prefix=self.root_directory.uri)
+            if path == "track":
+                tracks = [self.remote.get_track(track_id)]
+            elif path == "album":
+                tracks = self.remote.get_tracks_by([("album_id", track_id)],
+                                                   True, ["track+"])
+            else:
+                logger.info("Unknown Beets lookup URI: %s", uri)
+                tracks = []
             # remove occourences of None
             return [track for track in tracks if track]
         else:
