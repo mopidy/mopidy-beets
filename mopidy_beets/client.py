@@ -157,9 +157,9 @@ class BeetsRemoteClient(object):
                 logger.info('Beets - invalid sorting field ignore: %s',
                             sort_field)
         query_string = '/'.join(query_parts)
-        logger.debug('Beets query: %s', query_string)
-        items = self._get("{0}/query/{1}"
-                          .format(base_path, query_string))['results']
+        query_url = '{0}/query/{1}'.format(base_path, query_string)
+        logger.debug('Beets query: %s', query_url)
+        items = self._get(query_url)['results']
         if exact_text:
             # verify that text attributes do not just test 'is in', but match
             # equality
