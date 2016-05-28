@@ -8,13 +8,23 @@ logger = logging.getLogger(__name__)
 
 
 def parse_date(data):
-    if 'year' in data:
-        if 'day' in data and 'month' in data:
-            return '{year:04d}-{month:02d}-{day:02d}'.format(**data)
-        else:
-            return '{year:04d}'.format(**data)
+    # use "original" dates if possible
+    if 'original_year' in data:
+        day = data.get('original_day', None)
+        month = data.get('original_month', None)
+        year = data.get('original_year', None)
+    elif 'year' in data:
+        day = data.get('day', None)
+        month = data.get('month', None)
+        year = data.get('year', None)
     else:
         return None
+    # mopidy accepts dates as "YYYY" or "YYYY-MM-DD"
+    if day is not None and month is not None:
+        return '{year:04d}-{month:02d}-{day:02d}'.format(day=day, month=month,
+                                                         year=year)
+    else:
+        return '{year:04d}'.format(year=year)
 
 
 def _apply_beets_mapping(target_class, mapping, data):
