@@ -54,15 +54,22 @@ def _filter_none(values):
     return [value for value in values if value is not None]
 
 
-def parse_artist(data, is_album=False):
+def parse_artist(data, name_keyword):
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Artist
     mapping = {
         'uri': lambda d: assemble_uri('beets:library:artist',
-            id_value=d['albumartist' if is_album else 'artist']),
-        'name': 'albumartist' if is_album else 'artist',
-        'sortname': 'albumartist_sort' if is_album else 'artist_sort',
-        'musicbrainz_id': 'mb_albumartistid' if is_album else 'mb_artistid',
+                                      id_value=d[name_keyword]),
+        'name': name_keyword,
     }
+    if name_keyword == 'artist':
+        mapping['sortname'] = 'artist_sort'
+        mapping['musicbrainz_id'] = 'mb_artistid'
+    elif name_keyword == 'albumartist':
+        mapping['sortname'] = 'albumartist_sort'
+        mapping['musicbrainz_id'] = 'mb_albumartistid'
+    else:
+        # others - e.g. composers
+        pass
     return _apply_beets_mapping(Artist, mapping, data)
 
 
@@ -73,7 +80,7 @@ def parse_album(data, api):
     mapping = {
         'uri': lambda d: assemble_uri('beets:library:album', id_value=d['id']),
         'name': 'album',
-        'artists': lambda d: _filter_none([parse_artist(d, is_album=True)]),
+        'artists': lambda d: _filter_none([parse_artist(d, 'albumartist')]),
         'num_tracks': 'tracktotal',
         'num_discs': 'disctotal',
         'date': lambda d: parse_date(d),
@@ -92,10 +99,10 @@ def parse_track(data, api):
     mapping = {
         'uri': lambda d: 'beets:library:track;%s' % d['id'],
         'name': 'title',
-        'artists': lambda d: _filter_none([parse_artist(d, is_album=False)]),
+        'artists': lambda d: _filter_none([parse_artist(d, 'artist')]),
         'album': lambda d, api=api: api.get_album(d['album_id']) \
             if 'album_id' in d else None,
-        'composers': 'composer',
+        'composers': lambda d: _filter_none([parse_artist(d, 'composer')]),
         'performers': None,
         'genre': 'genre',
         'track_no': 'track',
