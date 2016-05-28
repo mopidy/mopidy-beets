@@ -80,7 +80,7 @@ def parse_track(data, api):
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
     mapping = {
-        'uri': lambda d: 'beets:track;%s' % d['id'],
+        'uri': lambda d: 'beets:library:track;%s' % d['id'],
         'name': 'title',
         'artists': lambda d: _filter_none([parse_artist(d, is_album=False)]),
         'album': lambda d, api=api: api.get_album(d['album_id']) \
@@ -134,7 +134,7 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
             # this prefix cannot be splitted
             logger.info('Failed to remove URI prefix (%s): %s',
                         uri_prefix, uri)
-            return None
+            return None, None
     if id_string:
         id_value = urllib.unquote(id_string.encode('ascii')).decode('utf-8')
         if id_type:
@@ -143,7 +143,7 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
             except ValueError:
                 logger.info('Failed to parse ID (%s) from uri: %s',
                             type(id_type), uri)
-                return None
+                return None, None
     else:
         id_value = None
     return result_uri, id_value

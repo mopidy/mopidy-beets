@@ -41,8 +41,8 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
     def browse(self, uri):
         logger.debug('Browsing Beets at: %s', uri)
-        parsed = parse_uri(uri, uri_prefix=self.root_directory.uri)
-        if not parsed:
+        path, item_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
+        if path is None:
             logger.error('Beets - failed to parse uri: %s', uri)
             return []
         elif uri == self.root_directory.uri:
@@ -50,11 +50,11 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             refs = [browser.ref for browser in self.category_browsers]
             refs.sort(key=lambda item: item.name)
             return refs
-        elif parsed[0] == 'album':
+        elif path == 'album':
             # show an album
             try:
-                album_id = parse_uri(uri, id_type=int)[1]
-            except IndexError:
+                album_id = int(item_id)
+            except ValueError:
                 logger.error('Beets - invalid album ID in URI: %s', uri)
                 return []
             tracks = self.remote.get_tracks_by([('album_id', album_id)], True,
@@ -63,15 +63,15 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     for track in tracks]
         else:
             # show a generic category directory
-            parsed_uri, id_value = parse_uri(uri)
             for browser in self.category_browsers:
-                if parsed_uri == browser.ref.uri:
-                    if id_value is None:
+                if path == parse_uri(browser.ref.uri,
+                                     uri_prefix=self.root_directory.uri)[0]:
+                    if item_id is None:
                         return browser.get_toplevel()
                     else:
-                        return browser.get_directory(parsed[1])
+                        return browser.get_directory(item_id)
             else:
-                logger.error('Invalid browse URI: %s / %s', uri, parsed[0])
+                logger.error('Invalid browse URI: %s / %s', uri, path)
                 return []
 
     def search(self, query=None, uris=None, exact=False):
