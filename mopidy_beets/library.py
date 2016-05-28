@@ -134,8 +134,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
             logger.debug('Beets lookup: %s', uri)
-            path, track_id = parse_uri(uri, id_type=int,
-                                       uri_prefix=self.root_directory.uri)
+            path, track_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
             if path == 'track':
                 tracks = [self.remote.get_track(track_id)]
             elif path == 'album':

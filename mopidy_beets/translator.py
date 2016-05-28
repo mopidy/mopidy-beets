@@ -117,7 +117,7 @@ def parse_track(data, api):
     return _apply_beets_mapping(Track, mapping, data)
 
 
-def parse_uri(uri, uri_prefix=None, id_type=None):
+def parse_uri(uri, uri_prefix=None):
     """ split a URI into an optional prefix and a value
 
         The format of a uri is similar to this:
@@ -132,9 +132,6 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
             * the function returns 'None' if the uri_prefix cannot be removed
               (you should consider this an error condition)
 
-        id_type (optional):
-            * convert the parsed id value by calling the 'id_type' (e.g. 'int')
-
         The result of the function is a tuple of the uri and the id value.
         In case of an error the result is simply None.
     """
@@ -142,6 +139,7 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
         result_uri, id_string = uri.split(';', 1)
     else:
         result_uri, id_string = uri, None
+    last_path_token = result_uri.split(':')[-1]
     if uri_prefix:
         if uri == uri_prefix:
             result_uri = ''
@@ -154,12 +152,12 @@ def parse_uri(uri, uri_prefix=None, id_type=None):
             return None, None
     if id_string:
         id_value = urllib.unquote(id_string.encode('ascii')).decode('utf-8')
-        if id_type:
+        # convert track and album IDs to int
+        if last_path_token in ('track', 'album'):
             try:
-                id_value = id_type(id_value)
+                id_value = int(id_value)
             except ValueError:
-                logger.info('Failed to parse ID (%s) from uri: %s',
-                            type(id_type), uri)
+                logger.info('Failed to parse integer ID from uri: %s', uri)
                 return None, None
     else:
         id_value = None
