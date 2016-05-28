@@ -251,8 +251,8 @@ class BeetsRemoteClient(object):
             logger.error('Request %s, failed with status code %s',
                          url, req.status_code)
             if (req.status_code == 404) and raise_not_found:
-                # sometimes we need to distinguish between empty and "not found"
-                raise KeyError("URL not found: %s" % url)
+                # sometimes we need to distinguish empty and 'not found'
+                raise KeyError('URL not found: %s' % url)
             else:
                 return None
         else:
