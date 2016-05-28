@@ -15,13 +15,6 @@ class AlbumsCategoryBrowser(GenericBrowserBase):
         return [models.Ref.directory(name=unicode(key), uri=assemble_uri(
             self.ref.uri, id_value=key)) for key in keys]
 
-    def _get_label(self, album):
-        artist_names = [artist.name for artist in album.artists]
-        if artist_names:
-            return ' - '.join([' / '.join(artist_names), album.name])
-        else:
-            return album.name
-
     def get_directory(self, key):
         albums = self.api.get_albums_by([(self.field, key)], True,
                                         self.sort_fields)
@@ -39,9 +32,26 @@ class AlbumsByArtistBrowser(AlbumsCategoryBrowser):
 
 class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
     field = 'genre'
-    sort_fields = ('album+', )
+    sort_fields = ('albumartist', 'original_year+', 'year+', 'album+')
+
+    def _get_label(self, album):
+        artists = ' / '.join([artist.name for artist in album.artists])
+        if artists and album.date:
+            return '{0} - {1} ({2})'.format(artists, album.name,
+                                            album.date.split("-")[0])
+        elif artists:
+            return '{0} - {1}'.format(artists, album.name)
+        else:
+            return album.name
 
 
 class AlbumsByYearBrowser(AlbumsCategoryBrowser):
     field = 'year'
     sort_fields = ('month+', 'day+', 'album+')
+
+    def _get_label(self, album):
+        artists = ' / '.join([artist.name for artist in album.artists])
+        if artists:
+            return '{0} - {1}'.format(artists, album.name)
+        else:
+            return album.name
