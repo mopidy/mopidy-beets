@@ -133,16 +133,16 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         if uri:
             # the older method (mopidy < 1.0): return a list of tracks
             # handle one or more tracks given with multiple semicolons
-            logger.debug("Beets lookup: %s", uri)
+            logger.debug('Beets lookup: %s', uri)
             path, track_id = parse_uri(uri, id_type=int,
                                        uri_prefix=self.root_directory.uri)
-            if path == "track":
+            if path == 'track':
                 tracks = [self.remote.get_track(track_id)]
-            elif path == "album":
-                tracks = self.remote.get_tracks_by([("album_id", track_id)],
-                                                   True, ["track+"])
+            elif path == 'album':
+                tracks = self.remote.get_tracks_by([('album_id', track_id)],
+                                                   True, ['track+'])
             else:
-                logger.info("Unknown Beets lookup URI: %s", uri)
+                logger.info('Unknown Beets lookup URI: %s', uri)
                 tracks = []
             # remove occourences of None
             return [track for track in tracks if track]
@@ -151,7 +151,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             return {uri: self.lookup(uri=uri) for uri in uris}
 
     def get_distinct(self, field, query=None):
-        logger.debug("Beets distinct query: %s (uri=%s)", field, query)
+        logger.debug('Beets distinct query: %s (uri=%s)', field, query)
         if not self.remote.has_connection:
             return []
         else:

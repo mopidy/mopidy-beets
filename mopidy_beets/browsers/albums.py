@@ -38,7 +38,7 @@ class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
         artists = ' / '.join([artist.name for artist in album.artists])
         if artists and album.date:
             return '{0} - {1} ({2})'.format(artists, album.name,
-                                            album.date.split("-")[0])
+                                            album.date.split('-')[0])
         elif artists:
             return '{0} - {1}'.format(artists, album.name)
         else:

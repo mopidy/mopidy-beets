@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_date(data):
-    # use "original" dates if possible
+    # use 'original' dates if possible
     if 'original_year' in data:
         day = data.get('original_day', None)
         month = data.get('original_month', None)
@@ -19,7 +19,7 @@ def parse_date(data):
         year = data.get('year', None)
     else:
         return None
-    # mopidy accepts dates as "YYYY" or "YYYY-MM-DD"
+    # mopidy accepts dates as 'YYYY' or 'YYYY-MM-DD'
     if day is not None and month is not None:
         return '{year:04d}-{month:02d}-{day:02d}'.format(day=day, month=month,
                                                          year=year)
