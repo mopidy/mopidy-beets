@@ -47,7 +47,8 @@ class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
 
 class AlbumsByYearBrowser(AlbumsCategoryBrowser):
     field = 'year'
-    sort_fields = ('month+', 'day+', 'album+')
+    sort_fields = ('original_month+', 'original_day+',
+                   'month+', 'day+', 'album+')
 
     def _get_label(self, album):
         artists = ' / '.join([artist.name for artist in album.artists])
