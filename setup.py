@@ -30,7 +30,7 @@ setup(
         'requests >= 2.0.0',
     ],
     entry_points={
-        b'mopidy.ext': [
+        'mopidy.ext': [
             'beets = mopidy_beets:BeetsExtension',
         ],
     },
