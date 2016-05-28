@@ -137,7 +137,7 @@ class BeetsRemoteClient(object):
             return urllib.quote(text)
 
         for attribute in attributes:
-            if isinstance(attribute, (str, unicode)):
+            if isinstance(attribute, basestring):
                 key = None
                 value = quote_and_encode(attribute)
                 query_parts.append(value)
@@ -169,7 +169,7 @@ class BeetsRemoteClient(object):
                     items = [item for item in items if value in item.values()]
                 else:
                     # filtering is necessary only for text based attributes
-                    if items and isinstance(items[0][key], (str, unicode)):
+                    if items and isinstance(items[0][key], basestring):
                         items = [item for item in items if item[key] == value]
         return items
 
