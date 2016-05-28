@@ -108,7 +108,7 @@ Credits
 Changelog
 =========
 
-v3.0.0 (UNRELEASED)
+v3.0.0 (2016-05-28)
 -------------------
 
 - Support browsing albums by artist, genre and year
