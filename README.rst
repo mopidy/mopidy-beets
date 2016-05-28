@@ -58,7 +58,7 @@ installation. Otherwise you could have problems with playing OGG files and
 other formats that require seeking (in technical terms: support for http
 "Range" requests is required for these files).
 
-The following Nginx configuration snippet is sufficent::
+The following Nginx configuration snippet is sufficient::
 
     server {
         listen 127.0.0.1:8889;
