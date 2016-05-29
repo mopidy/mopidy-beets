@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from mopidy import models
 
 from mopidy_beets.browsers import GenericBrowserBase
