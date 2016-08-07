@@ -100,8 +100,8 @@ def parse_track(data, api):
         'uri': lambda d: 'beets:library:track;%s' % d['id'],
         'name': 'title',
         'artists': lambda d: _filter_none([parse_artist(d, 'artist')]),
-        'album': lambda d, api=api: api.get_album(d['album_id'])
-                                    if 'album_id' in d else None,
+        'album': lambda d, api=api: (
+            api.get_album(d['album_id']) if 'album_id' in d else None),
         'composers': lambda d: _filter_none([parse_artist(d, 'composer')]),
         'performers': None,
         'genre': 'genre',
