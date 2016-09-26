@@ -44,7 +44,7 @@ Configuration
 
     [beets]
     hostname = 127.0.0.1
-    port = 8888
+    port = 8337
 
 #. Restart Mopidy.
 
