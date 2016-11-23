@@ -104,6 +104,15 @@ Credits
 Changelog
 =========
 
+v3.1.0 (2016-11-23)
+-------------------
+
+- Fix handling of non-ascii characters in album titles and artist names
+
+- Fix handling of empty titles and names
+
+- Reduce ressource consumption of string matching API requests
+
 v3.0.0 (2016-05-28)
 -------------------
 
