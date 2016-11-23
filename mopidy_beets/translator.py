@@ -152,7 +152,7 @@ def parse_uri(uri, uri_prefix=None):
             logger.info('Failed to remove URI prefix (%s): %s',
                         uri_prefix, uri)
             return None, None
-    if id_string:
+    if id_string is not None:
         id_value = urllib.unquote(id_string.encode('ascii')).decode('utf-8')
         # convert track and album IDs to int
         if last_path_token in ('track', 'album'):
