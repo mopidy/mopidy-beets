@@ -71,7 +71,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     else:
                         return browser.get_directory(item_id)
             else:
-                logger.error('Invalid browse URI: %s / %s', uri, path)
+                logger.error('Beets - Invalid browse URI: %s / %s', uri, path)
                 return []
 
     def search(self, query=None, uris=None, exact=False):
@@ -122,7 +122,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 else:
                     logger.info('Beets: ignoring unknown query key: %s', field)
                     break
-        logger.debug('Search query: %s', search_list)
+        logger.debug('Beets search query: %s', search_list)
         tracks = self.remote.get_tracks_by(search_list, exact, [])
         uri = '-'.join([item if isinstance(item, str) else '='.join(item)
                         for item in search_list])

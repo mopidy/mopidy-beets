@@ -216,9 +216,9 @@ class BeetsRemoteClient(object):
             except KeyError:
                 # The above URL was added to the Beets API after v1.3.17
                 # Probably we are working against an older version.
-                logging.warning(
+                logger.warning(
                     'Failed to use the /item/unique/KEY feature of the Beets '
-                    'API (introduced after v1.3.17). Falling back to the '
+                    'API (introduced in v1.3.18). Falling back to the '
                     'slower and more ressource intensive manual approach. '
                     'Please upgrade Beets, if possible.')
                 # Warn only once and use the manual approach for all future
@@ -257,14 +257,14 @@ class BeetsRemoteClient(object):
 
     def _get(self, url, raise_not_found=False):
         url = self.api_endpoint + url
-        logger.debug('Requesting %s' % url)
+        logger.debug('Beets - requesting %s' % url)
         try:
             req = self.api.get(url)
         except RequestException as e:
-            logger.error('Request %s, failed with error %s', url, e)
+            logger.error('Beets - Request %s, failed with error %s', url, e)
             return None
         if req.status_code != 200:
-            logger.error('Request %s, failed with status code %s',
+            logger.error('Beets - Request %s, failed with status code %s',
                          url, req.status_code)
             if (req.status_code == 404) and raise_not_found:
                 # sometimes we need to distinguish empty and 'not found'
@@ -280,7 +280,7 @@ class BeetsRemoteClient(object):
             try:
                 albums.append(parse_album(dataset, self))
             except (ValueError, KeyError) as exc:
-                logger.info('Failed to parse album data: %s', exc)
+                logger.info('Beets - Failed to parse album data: %s', exc)
         return [album for album in albums if album]
 
     def _parse_multiple_tracks(self, track_datasets):
@@ -289,5 +289,5 @@ class BeetsRemoteClient(object):
             try:
                 tracks.append(parse_track(dataset, self))
             except (ValueError, KeyError) as exc:
-                logger.info('Failed to parse track data: %s', exc)
+                logger.info('Beets - Failed to parse track data: %s', exc)
         return [track for track in tracks if track]
