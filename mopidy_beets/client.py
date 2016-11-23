@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 import time
 import urllib
 
@@ -132,23 +133,38 @@ class BeetsRemoteClient(object):
                 text = str(text)
             # Escape colons. The beets web API uses the colon to separate
             # field name and search term.
-            text = text.replace(':', r'\:')
+            try:
+                text = text.replace(':', r'\:')
+            except UnicodeDecodeError:
+                # required for python2 only (see above 'unicode' condition)
+                text = text.decode('utf-8').replace(':', r'\:').encode("utf-8")
             # quoting for the query string
             return urllib.quote(text)
 
         for attribute in attributes:
             if isinstance(attribute, basestring):
-                key = None
-                value = quote_and_encode(attribute)
-                query_parts.append(value)
+                query_parts.append(quote_and_encode(attribute))
                 exact_query_list.append((None, attribute))
             else:
                 # the beets API accepts upper and lower case, but always
                 # returns lower case attributes
-                key = quote_and_encode(attribute[0].lower())
-                value = quote_and_encode(attribute[1])
-                query_parts.append('{0}:{1}'.format(key, value))
-                exact_query_list.append((attribute[0].lower(), attribute[1]))
+                key = attribute[0].lower()
+                value = attribute[1]
+                query_parts.append('{}:{}'.format(quote_and_encode(key),
+                                                  quote_and_encode(value)))
+                # Try to add a simple regex filter, if we look for a string.
+                # This will reduce the ressource consumption of the query on
+                # the server side (and for our 'exact' matching below).
+                if exact_text and isinstance(value, basestring):
+                    regex_query = '^{}$'.format(re.escape(value))
+                    beets_query = '{}::{}'.format(
+                        quote_and_encode(key), quote_and_encode(regex_query))
+                    logger.debug('Beets - regular expression query: {}'
+                                 .format(beets_query))
+                    query_parts.append(beets_query)
+                else:
+                    # in all other cases: use non-regex matching (if requested)
+                    exact_query_list.append((key, value))
         # add sorting fields
         for sort_field in (sort_fields or []):
             if (len(sort_field) > 1) and (sort_field[-1] in ('-', '+')):
