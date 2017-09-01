@@ -68,7 +68,7 @@ The following Nginx configuration snippet is sufficient::
     }
 
 Now you should change the mopidy configuration accordingly to point to the
-Nginx port above intead of the Beets port. Afterwards mopidy will be able to
+Nginx port above instead of the Beets port. Afterwards mopidy will be able to
 play file formats that require seeking.
 
 
