@@ -2,16 +2,16 @@
 Mopidy-Beets
 ************
 
-.. image:: https://img.shields.io/pypi/v/Mopidy-Beets.svg?style=flat
+.. image:: https://img.shields.io/pypi/v/Mopidy-Beets
     :target: https://pypi.python.org/pypi/Mopidy-Beets/
     :alt: Latest PyPI version
 
-.. image:: https://img.shields.io/travis/mopidy/mopidy-beets/master.svg?style=flat
-    :target: https://travis-ci.org/mopidy/mopidy-beets
-    :alt: Travis CI build status
+.. image:: https://img.shields.io/circleci/build/gh/mopidy/mopidy-beets
+    :target: https://img.shields.io/circleci/build/gh/mopidy/mopidy-beets
+    :alt: CircleCI build status
 
-.. image:: https://img.shields.io/coveralls/mopidy/mopidy-beets/master.svg?style=flat
-   :target: https://coveralls.io/r/mopidy/mopidy-beets?branch=master
+.. image:: https://img.shields.io/codecov/c/gh/mopidy/mopidy-beets
+   :target: https://codecov.io/gh/mopidy/mopidy-beets
    :alt: Test coverage
 
 `Mopidy <http://www.mopidy.com/>`_ extension for browsing, searching and
