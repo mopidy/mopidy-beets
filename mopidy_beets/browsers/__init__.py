@@ -1,5 +1,4 @@
 class GenericBrowserBase:
-
     def __init__(self, ref, api):
         self.ref = ref
         self.api = api
