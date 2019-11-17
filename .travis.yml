@@ -1,32 +1,31 @@
-sudo: false
+dist: bionic
 
 language: python
 
-python:
-  - "2.7_with_system_site_packages"
-
-env:
-  - TOX_ENV=py27
-  - TOX_ENV=flake8
+matrix:
+  include:
+    - python: 3.7
+      env: TOXENV=py37
+    - python: 3.8
+      env: TOXENV=py38
+    - python: 3.8
+      env: TOXENV=black,check-manifest,flake8
 
 install:
   - "pip install tox"
 
 script:
-  - "tox -e $TOX_ENV"
-
-after_success:
-  - "if [ $TOX_ENV == 'py27' ]; then pip install coveralls; coveralls; fi"
+  - "tox"
 
 branches:
   except:
     - debian
 
-notifications:
-  irc:
-    channels:
-      - "irc.freenode.org#mopidy"
-    on_success: change
-    on_failure: change
-    use_notice: true
-    skip_join: true
+#notifications:
+#  irc:
+#    channels:
+#      - "irc.freenode.org#mopidy"
+#    on_success: change
+#    on_failure: change
+#    use_notice: true
+#    skip_join: true
