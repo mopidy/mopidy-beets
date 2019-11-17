@@ -1,9 +1,9 @@
-from __future__ import unicode_literals
-
 import logging
 import re
 import time
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from mopidy import httpclient
 
@@ -126,23 +126,16 @@ class BeetsRemoteClient(object):
         exact_query_list = []
 
         def quote_and_encode(text):
-            # utf-8 seems to be necessary for Python 2.7 and urllib.quote
-            if isinstance(text, unicode):
-                text = text.encode('utf-8')
-            elif isinstance(text, (int, float)):
+            if isinstance(text, (int, float)):
                 text = str(text)
             # Escape colons. The beets web API uses the colon to separate
             # field name and search term.
-            try:
-                text = text.replace(':', r'\:')
-            except UnicodeDecodeError:
-                # required for python2 only (see above 'unicode' condition)
-                text = text.decode('utf-8').replace(':', r'\:').encode("utf-8")
+            text = text.replace(':', r'\:')
             # quoting for the query string
-            return urllib.quote(text)
+            return urllib.parse.quote(text)
 
         for attribute in attributes:
-            if isinstance(attribute, basestring):
+            if isinstance(attribute, str):
                 query_parts.append(quote_and_encode(attribute))
                 exact_query_list.append((None, attribute))
             else:
@@ -155,7 +148,7 @@ class BeetsRemoteClient(object):
                 # Try to add a simple regex filter, if we look for a string.
                 # This will reduce the ressource consumption of the query on
                 # the server side (and for our 'exact' matching below).
-                if exact_text and isinstance(value, basestring):
+                if exact_text and isinstance(value, str):
                     regex_query = '^{}$'.format(re.escape(value))
                     beets_query = '{}::{}'.format(
                         quote_and_encode(key), quote_and_encode(regex_query))
@@ -185,7 +178,7 @@ class BeetsRemoteClient(object):
                     items = [item for item in items if value in item.values()]
                 else:
                     # filtering is necessary only for text based attributes
-                    if items and isinstance(items[0][key], basestring):
+                    if items and isinstance(items[0][key], str):
                         items = [item for item in items if item[key] == value]
         return items
 
@@ -248,7 +241,7 @@ class BeetsRemoteClient(object):
         # art. Thus we need to ask for it and check the status code.
         url = '{0}/album/{1}/art'.format(self.api_endpoint, album_id)
         try:
-            request = urllib.urlopen(url)
+            request = urllib.request.urlopen(url)
         except IOError:
             # DNS problem or similar
             return None

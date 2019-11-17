@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import re
 
 from setuptools import find_packages, setup
@@ -25,7 +23,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'setuptools',
-        'Mopidy >= 1.0',
+        'Mopidy >= 3.0.0a3',
         'Pykka >= 1.1',
         'requests >= 2.0.0',
     ],
@@ -39,7 +37,9 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Multimedia :: Sound/Audio :: Players',
     ],
 )

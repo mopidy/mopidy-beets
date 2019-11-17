@@ -1,7 +1,7 @@
-from __future__ import unicode_literals
-
 import logging
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from mopidy.models import Album, Artist, Track
 
@@ -153,7 +153,7 @@ def parse_uri(uri, uri_prefix=None):
                         uri_prefix, uri)
             return None, None
     if id_string is not None:
-        id_value = urllib.unquote(id_string.encode('ascii')).decode('utf-8')
+        id_value = urllib.parse.unquote(id_string)
         # convert track and album IDs to int
         if last_path_token in ('track', 'album'):
             try:
@@ -173,7 +173,7 @@ def assemble_uri(*args, **kwargs):
         return base_path
     else:
         # convert numbers and other non-strings
-        if not isinstance(id_value, (str, unicode)):
+        if not isinstance(id_value, str):
             id_value = str(id_value)
-        id_string = urllib.quote(id_value.encode('utf-8'))
-        return '%s;%s' % (base_path, id_string)
+        id_string = urllib.parse.quote(id_value)
+        return "%s;%s" % (base_path, id_string)

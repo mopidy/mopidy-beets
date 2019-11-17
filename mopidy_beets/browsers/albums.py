@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from mopidy import models
 
 from mopidy_beets.browsers import GenericBrowserBase
@@ -14,7 +12,7 @@ class AlbumsCategoryBrowser(GenericBrowserBase):
 
     def get_toplevel(self):
         keys = self.api.get_sorted_unique_album_attributes(self.field)
-        return [models.Ref.directory(name=unicode(key), uri=assemble_uri(
+        return [models.Ref.directory(name=key, uri=assemble_uri(
             self.ref.uri, id_value=key)) for key in keys]
 
     def get_directory(self, key):
