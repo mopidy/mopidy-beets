@@ -6,7 +6,7 @@ The following steps are necessary for a release:
 
 * Create a new changelog entry (README.rst)
 
-* Update the release number in mopidy_beets/__init__.py
+* Update the release number in mopidy_beets/__init__.py and setup.cfg
 
 * Create a relase commit: `git commit -m "Release vX.Y.Z"`
 
