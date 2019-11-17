@@ -44,13 +44,15 @@ Configuration
 
 #. Restart Mopidy.
 
-#. Searches in Mopidy will now return results from your Beets library.
+#. The Beets library is now accessible in the "browser" section of your Mopidy
+   client. Additionally searches in Mopidy return results from your Beets
+   library.
 
 Proxy Configuration for OGG files (optional)
 --------------------------------------------
 
-You may want to configure an http proxy server in front of your beets
-installation. Otherwise you could have problems with playing OGG files and
+You may want to configure an http proxy server in front of your Beets plugin
+(not mopidy). Otherwise you could have problems with playing OGG files and
 other formats that require seeking (in technical terms: support for http
 "Range" requests is required for these files).
 
