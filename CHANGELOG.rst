@@ -12,6 +12,8 @@ v4.0.0rc1 (UNRELEASED)
 
 - Update project setup.
 
+- Change default port from 8888 to 8337 to match Beets' defaults.
+
 
 v3.1.0 (2016-11-23)
 ===================
