@@ -1,8 +1,4 @@
-from __future__ import unicode_literals
-
-
 class GenericBrowserBase:
-
     def __init__(self, ref, api):
         self.ref = ref
         self.api = api
