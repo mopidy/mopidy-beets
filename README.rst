@@ -58,11 +58,11 @@ other formats that require seeking (in technical terms: support for http
 The following Nginx configuration snippet is sufficient::
 
     server {
-        listen 127.0.0.1:8889;
+        listen 127.0.0.1:8338;
         root /usr/share/beets/beetsplug/web;
         server_name beets.local;
         location / {
-            proxy_pass http://localhost:8888;
+            proxy_pass http://localhost:8337;
             # this statement forces Nginx to emulate "Range" responses
             proxy_force_ranges on;
         }

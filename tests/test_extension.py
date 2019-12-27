@@ -14,7 +14,7 @@ class ExtensionTest(unittest.TestCase):
         self.assertIn("[beets]", config)
         self.assertIn("enabled = true", config)
         self.assertIn("hostname = 127.0.0.1", config)
-        self.assertIn("port = 8888", config)
+        self.assertIn("port = 8337", config)
 
     def test_get_config_schema(self):
         ext = BeetsExtension()
