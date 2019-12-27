@@ -3,16 +3,16 @@ Mopidy-Beets
 ************
 
 .. image:: https://img.shields.io/pypi/v/Mopidy-Beets
-    :target: https://pypi.python.org/pypi/Mopidy-Beets/
+    :target: https://pypi.org/project/Mopidy-Beets/
     :alt: Latest PyPI version
 
 .. image:: https://img.shields.io/circleci/build/gh/mopidy/mopidy-beets
-    :target: https://img.shields.io/circleci/build/gh/mopidy/mopidy-beets
+    :target: https://circleci.com/gh/mopidy/mopidy-beets
     :alt: CircleCI build status
 
 .. image:: https://img.shields.io/codecov/c/gh/mopidy/mopidy-beets
-   :target: https://codecov.io/gh/mopidy/mopidy-beets
-   :alt: Test coverage
+    :target: https://codecov.io/gh/mopidy/mopidy-beets
+    :alt: Test coverage
 
 `Mopidy <http://www.mopidy.com/>`_ extension for browsing, searching and
 playing music from `Beets <http://beets.io/>`_ via Beets' web extension.
