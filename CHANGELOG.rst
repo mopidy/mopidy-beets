@@ -2,7 +2,7 @@
 Changelog
 *********
 
-v4.0.0rc2 (UNRELEASED)
+v4.0.0rc2 (2019-12-27)
 ======================
 
 - Fix casing of PyPI distribution name.
