@@ -14,8 +14,8 @@ Mopidy-Beets
     :target: https://codecov.io/gh/mopidy/mopidy-beets
     :alt: Test coverage
 
-`Mopidy <http://www.mopidy.com/>`_ extension for browsing, searching and
-playing music from `Beets <http://beets.io/>`_ via Beets' web extension.
+`Mopidy <https://mopidy.com/>`_ extension for browsing, searching and
+playing music from `Beets <https://beets.io/>`_ via Beets' web extension.
 
 
 Installation
@@ -23,17 +23,16 @@ Installation
 
 Install by running::
 
-    pip install Mopidy-Beets
+    sudo python3 -m pip install Mopidy-Beets
 
-Or, if available, install the Debian/Ubuntu package from `apt.mopidy.com
-<http://apt.mopidy.com/>`_.
+See https://mopidy.com/ext/beets/ for alternative installation methods.
 
 
 Configuration
 =============
 
 #. Setup the `Beets web plugin
-   <http://beets.readthedocs.org/en/latest/plugins/web.html>`_.
+   <https://beets.readthedocs.org/en/latest/plugins/web.html>`_.
 
 #. Tell Mopidy where to find the Beets web interface by adding the following to
    your ``mopidy.conf``::
@@ -48,7 +47,7 @@ Configuration
    client. Additionally searches in Mopidy return results from your Beets
    library.
 
-Proxy Configuration for OGG files (optional)
+Proxy configuration for OGG files (optional)
 --------------------------------------------
 
 You may want to configure an http proxy server in front of your Beets plugin
@@ -93,6 +92,7 @@ Project resources
 
 - `Source code <https://github.com/mopidy/mopidy-beets>`_
 - `Issue tracker <https://github.com/mopidy/mopidy-beets/issues>`_
+- `Changelog <https://github.com/mopidy/mopidy-beets/blob/master/CHANGELOG.rst>`_
 
 
 Credits
@@ -101,9 +101,3 @@ Credits
 - Original author: `Janez Troha <https://github.com/dz0ny>`_
 - Current maintainer: `Lars Kruse <devel@sumpfralle.de>`_
 - `Contributors <https://github.com/mopidy/mopidy-beets/graphs/contributors>`_
-
-
-Changelog
-=========
-
-See the [CHANGELOG file](./CHANGELOG.rst) for details.
