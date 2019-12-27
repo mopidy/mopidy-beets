@@ -1,9 +1,10 @@
 import os
 
+import pkg_resources
 from mopidy import config, ext
 
 
-__version__ = "3.1.0"
+__version__ = pkg_resources.get_distribution("Mopidy-Beets").version
 
 
 class BeetsExtension(ext.Extension):
