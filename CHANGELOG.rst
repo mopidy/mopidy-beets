@@ -3,6 +3,16 @@ Changelog
 *********
 
 
+v4.0.0rc1 (UNRELEASED)
+======================
+
+- Require Mopidy >= 3.0.0a3.
+
+- Require Python >= 3.7. No major changes required.
+
+- Update project setup.
+
+
 v3.1.0 (2016-11-23)
 ===================
 
