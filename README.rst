@@ -92,7 +92,7 @@ Project resources
 
 - `Source code <https://github.com/mopidy/mopidy-beets>`_
 - `Issue tracker <https://github.com/mopidy/mopidy-beets/issues>`_
-- `Changelog <https://github.com/mopidy/mopidy-beets/blob/master/CHANGELOG.rst>`_
+- `Changelog <https://github.com/mopidy/mopidy-beets/releases>`_
 
 
 Credits
