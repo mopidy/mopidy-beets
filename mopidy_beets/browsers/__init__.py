@@ -4,7 +4,7 @@ class GenericBrowserBase:
         self.api = api
 
     def get_toplevel(self):
-        """ deliver the top level directories or tracks for this browser
+        """deliver the top level directories or tracks for this browser
 
         The result is a list of ``mopidy.models.Ref`` objects.
         Usually this list contains entries like "genre" or other categories.
@@ -12,7 +12,7 @@ class GenericBrowserBase:
         raise NotImplementedError
 
     def get_directory(self, key):
-        """ deliver the corresponding sub items for a given category key
+        """deliver the corresponding sub items for a given category key
 
         The result is a list of ``mopidy.models.Ref`` objects.
         Usually this list contains tracks or albums belonging to the given

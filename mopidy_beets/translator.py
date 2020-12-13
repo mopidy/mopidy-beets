@@ -31,7 +31,7 @@ def parse_date(data):
 
 
 def _apply_beets_mapping(target_class, mapping, data):
-    """ evaluate a mapping of target keys and their source keys or callables
+    """evaluate a mapping of target keys and their source keys or callables
 
     'target_class' is the Mopidy model to be used for creating the item.
     'mapping' is a dict of {'target': source}.
@@ -120,22 +120,22 @@ def parse_track(data, api):
 
 
 def parse_uri(uri, uri_prefix=None):
-    """ split a URI into an optional prefix and a value
+    """split a URI into an optional prefix and a value
 
-        The format of a uri is similar to this:
-            beets:library:album;Foo%20Bar
-        (note the ampersand separating the value from the path)
+    The format of a uri is similar to this:
+        beets:library:album;Foo%20Bar
+    (note the ampersand separating the value from the path)
 
-        uri_prefix (optional):
-            * remove the string from the beginning of uri
-            * the match is valid only if the prefix is separated from the
-              remainder of the URI with a color, an ampersand or it is equal
-              to the full URI
-            * the function returns 'None' if the uri_prefix cannot be removed
-              (you should consider this an error condition)
+    uri_prefix (optional):
+        * remove the string from the beginning of uri
+        * the match is valid only if the prefix is separated from the
+          remainder of the URI with a color, an ampersand or it is equal
+          to the full URI
+        * the function returns 'None' if the uri_prefix cannot be removed
+          (you should consider this an error condition)
 
-        The result of the function is a tuple of the uri and the id value.
-        In case of an error the result is simply None.
+    The result of the function is a tuple of the uri and the id value.
+    In case of an error the result is simply None.
     """
     if ";" in uri:
         result_uri, id_string = uri.split(";", 1)

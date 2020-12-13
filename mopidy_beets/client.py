@@ -110,23 +110,23 @@ class BeetsRemoteClient(object):
     def _get_objects_by_attribute(
         self, base_path, attributes, exact_text, sort_fields
     ):
-        """ The beets web-api accepts queries like:
-                /item/query/album_id:183/track:2
-                /item/query/album:Foo
-                /album/query/track_no:12/year+/month+
-            Text-based matches (e.g. 'album' or 'artist') are case-independent
-            'is in' matches. Thus we need to filter the result, since we want
-            exact matches.
+        """The beets web-api accepts queries like:
+            /item/query/album_id:183/track:2
+            /item/query/album:Foo
+            /album/query/track_no:12/year+/month+
+        Text-based matches (e.g. 'album' or 'artist') are case-independent
+        'is in' matches. Thus we need to filter the result, since we want
+        exact matches.
 
-            @param attributes: attributes to be matched
-            @type attribute: list of key/value pairs or strings
-            @param exact_text: True for exact matches, False for
-                               case-insensitive 'is in' matches (only relevant
-                               for text values - not integers)
-            @type exact_text: bool
-            @param sort_fields: fieldnames, each followed by '+' or '-'
-            @type sort_fields: list of strings
-            @rtype: list of json datasets describing tracks or albums
+        @param attributes: attributes to be matched
+        @type attribute: list of key/value pairs or strings
+        @param exact_text: True for exact matches, False for
+                           case-insensitive 'is in' matches (only relevant
+                           for text values - not integers)
+        @type exact_text: bool
+        @param sort_fields: fieldnames, each followed by '+' or '-'
+        @type sort_fields: list of strings
+        @rtype: list of json datasets describing tracks or albums
         """
         # assemble the query string
         query_parts = []
