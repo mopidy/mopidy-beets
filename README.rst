@@ -6,9 +6,9 @@ Mopidy-Beets
     :target: https://pypi.org/project/Mopidy-Beets/
     :alt: Latest PyPI version
 
-.. image:: https://img.shields.io/circleci/build/gh/mopidy/mopidy-beets
-    :target: https://circleci.com/gh/mopidy/mopidy-beets
-    :alt: CircleCI build status
+.. image:: https://img.shields.io/github/workflow/status/mopidy/mopidy-beets/CI
+    :target: https://github.com/mopidy/mopidy-beets/actions
+    :alt: CI build status
 
 .. image:: https://img.shields.io/codecov/c/gh/mopidy/mopidy-beets
     :target: https://codecov.io/gh/mopidy/mopidy-beets
