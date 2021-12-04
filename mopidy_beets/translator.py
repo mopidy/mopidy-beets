@@ -148,7 +148,7 @@ def parse_uri(uri, uri_prefix=None):
         elif result_uri.startswith(uri_prefix + ":"):
             result_uri = result_uri[len(uri_prefix) + 1 :]
         else:
-            # this prefix cannot be splitted
+            # this prefix cannot be split
             logger.info("Failed to remove URI prefix (%s): %s", uri_prefix, uri)
             return None, None
     if id_string is not None:

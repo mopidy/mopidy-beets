@@ -157,7 +157,7 @@ class BeetsRemoteClient:
                     )
                 )
                 # Try to add a simple regex filter, if we look for a string.
-                # This will reduce the ressource consumption of the query on
+                # This will reduce the resource consumption of the query on
                 # the server side (and for our 'exact' matching below).
                 if exact_text and isinstance(value, str):
                     regex_query = "^{}$".format(re.escape(value))
@@ -231,7 +231,7 @@ class BeetsRemoteClient:
                 logger.warning(
                     "Failed to use the /item/unique/KEY feature of the Beets "
                     "API (introduced in v1.3.18). Falling back to the "
-                    "slower and more ressource intensive manual approach. "
+                    "slower and more resource intensive manual approach. "
                     "Please upgrade Beets, if possible."
                 )
                 # Warn only once and use the manual approach for all future
