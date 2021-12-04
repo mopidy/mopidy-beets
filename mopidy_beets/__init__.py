@@ -17,7 +17,7 @@ class BeetsExtension(ext.Extension):
         return config.read(conf_file)
 
     def get_config_schema(self):
-        schema = super(BeetsExtension, self).get_config_schema()
+        schema = super().get_config_schema()
         schema["hostname"] = config.Hostname()
         schema["port"] = config.Port()
         return schema

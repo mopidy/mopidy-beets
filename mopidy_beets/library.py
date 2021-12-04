@@ -32,7 +32,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(BeetsLibraryProvider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.remote = self.backend.beets_api
         self.category_browsers = []
         for key, label, browser_class in self.root_categorie_list:
