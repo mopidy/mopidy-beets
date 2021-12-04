@@ -17,7 +17,7 @@ from mopidy_beets.translator import parse_album, parse_track
 logger = logging.getLogger(__name__)
 
 
-class cache(object):  # noqa: N801
+class cache:
     # TODO: merge this to util library
 
     def __init__(self, ctl=8, ttl=3600):
@@ -51,9 +51,9 @@ class cache(object):  # noqa: N801
         return _memoized
 
 
-class BeetsRemoteClient(object):
+class BeetsRemoteClient:
     def __init__(self, endpoint, proxy_config):
-        super(BeetsRemoteClient, self).__init__()
+        super().__init__()
         self.api = self._get_session(proxy_config)
         self.api_endpoint = endpoint
         logger.info("Connecting to Beets remote library %s", endpoint)

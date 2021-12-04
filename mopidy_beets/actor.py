@@ -15,7 +15,7 @@ class BeetsBackend(pykka.ThreadingActor, backend.Backend):
     uri_schemes = ["beets"]
 
     def __init__(self, config, audio):
-        super(BeetsBackend, self).__init__()
+        super().__init__()
 
         beets_endpoint = "http://%s:%s" % (
             config["beets"]["hostname"],
