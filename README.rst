@@ -15,7 +15,9 @@ Mopidy-Beets
     :alt: Test coverage
 
 `Mopidy <https://mopidy.com/>`_ extension for browsing, searching and
-playing music from `Beets <https://beets.io/>`_ via Beets' web extension.
+playing music from a music collection managed via `Beets <https://beets.io/>`_.
+This extension uses the
+`Beets plugin "web" <https://beets.readthedocs.io/en/latest/plugins/web.html>`_.
 
 
 Installation
