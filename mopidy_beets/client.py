@@ -156,10 +156,11 @@ class BeetsRemoteClient(object):
                         quote_and_encode(key), quote_and_encode(value)
                     )
                 )
-                # Try to add a simple regex filter, if we look for a string.
-                # This will reduce the ressource consumption of the query on
+                # Try to add a simple regex filter, if we look for a string
+                # that doesn't contain a forward slash "/".
+                # This will reduce the resource consumption of the query on
                 # the server side (and for our 'exact' matching below).
-                if exact_text and isinstance(value, str):
+                if exact_text and isinstance(value, str) and not "/" in value:
                     regex_query = "^{}$".format(re.escape(value))
                     beets_query = "{}::{}".format(
                         quote_and_encode(key), quote_and_encode(regex_query)
