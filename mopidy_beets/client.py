@@ -160,7 +160,7 @@ class BeetsRemoteClient(object):
                 # that doesn't contain a forward slash "/".
                 # This will reduce the resource consumption of the query on
                 # the server side (and for our 'exact' matching below).
-                if exact_text and isinstance(value, str) and not "/" in value:
+                if exact_text and isinstance(value, str) and "/" not in value:
                     regex_query = "^{}$".format(re.escape(value))
                     beets_query = "{}::{}".format(
                         quote_and_encode(key), quote_and_encode(regex_query)
@@ -201,7 +201,7 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_artists(self):
-        """ returns all artists of one or more tracks """
+        """returns all artists of one or more tracks"""
         names = self._get("/artist/")["artist_names"]
         names.sort()
         # remove empty names
@@ -217,7 +217,7 @@ class BeetsRemoteClient(object):
 
     @cache(ctl=32)
     def _get_unique_attribute_values(self, base_url, field, sort_field):
-        """ returns all artists, genres, ... of tracks or albums """
+        """returns all artists, genres, ... of tracks or albums"""
         if not hasattr(self, "__legacy_beets_api_detected"):
             try:
                 result = self._get(
