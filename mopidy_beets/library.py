@@ -22,7 +22,6 @@ DATE_REGEX = re.compile(
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
-
     root_directory = models.Ref.directory(
         uri="beets:library", name="Beets library"
     )
@@ -95,7 +94,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
         self._validate_query(query)
         search_list = []
-        for (field, values) in query.items():
+        for field, values in query.items():
             for val in values:
                 # missing / unsupported fields: uri, performer
                 if field == "any":
