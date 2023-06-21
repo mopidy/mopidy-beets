@@ -5,7 +5,6 @@ from mopidy_beets.translator import assemble_uri
 
 
 class AlbumsCategoryBrowser(GenericBrowserBase):
-
     field = None
     sort_fields = None
     label_fields = None
