@@ -8,7 +8,6 @@ __version__ = pkg_resources.get_distribution("Mopidy-Beets").version
 
 
 class BeetsExtension(ext.Extension):
-
     dist_name = "Mopidy-Beets"
     ext_name = "beets"
     version = __version__

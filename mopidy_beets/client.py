@@ -200,7 +200,7 @@ class BeetsRemoteClient(object):
 
     @cache()
     def get_artists(self):
-        """ returns all artists of one or more tracks """
+        """returns all artists of one or more tracks"""
         names = self._get("/artist/")["artist_names"]
         names.sort()
         # remove empty names
@@ -216,7 +216,7 @@ class BeetsRemoteClient(object):
 
     @cache(ctl=32)
     def _get_unique_attribute_values(self, base_url, field, sort_field):
-        """ returns all artists, genres, ... of tracks or albums """
+        """returns all artists, genres, ... of tracks or albums"""
         if not hasattr(self, "__legacy_beets_api_detected"):
             try:
                 result = self._get(
