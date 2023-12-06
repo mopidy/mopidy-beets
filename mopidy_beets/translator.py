@@ -102,7 +102,7 @@ def parse_track(data, api):
         "name": "title",
         "artists": lambda d: _filter_none([parse_artist(d, "artist")]),
         "album": lambda d, api=api: (
-            api.get_album(d["album_id"]) if "album_id" in d else None
+            api.get_album(d["album_id"]) if d.get("album_id") else None
         ),
         "composers": lambda d: _filter_none([parse_artist(d, "composer")]),
         "performers": None,
