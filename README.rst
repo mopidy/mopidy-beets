@@ -50,10 +50,12 @@ Configuration
 Proxy configuration for OGG files (optional)
 --------------------------------------------
 
-You may want to configure an http proxy server in front of your Beets plugin
-(not mopidy). Otherwise you could have problems with playing OGG files and
-other formats that require seeking (in technical terms: support for http
-"Range" requests is required for these files).
+In case you use a beets version older than 1.6.1, you may need to configure
+an HTTP reverse-proxy server in front of the Beets web plugin (not mopidy)
+because `it does not handle HTTP "Range" requests properly <https://github.com/beetbox/beets/pull/5057>`_.
+If you don't apply this workaround, mopidy may not be able to stream/play
+large audio files and/or does not allow you to seek.
+The is the case for OGG files in particular.
 
 The following Nginx configuration snippet is sufficient::
 
@@ -65,6 +67,8 @@ The following Nginx configuration snippet is sufficient::
             proxy_pass http://localhost:8337;
             # this statement forces Nginx to emulate "Range" responses
             proxy_force_ranges on;
+            # Hide Range header from beets/flask, preventing range handling
+            proxy_set_header "Range" "";
         }
     }
 
