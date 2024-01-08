@@ -52,13 +52,14 @@ class cache:
 
 
 class BeetsRemoteClient:
-    def __init__(self, endpoint, proxy_config):
+    def __init__(self, endpoint, proxy_config, request_timeout=4):
         super().__init__()
+        self._request_timeout = request_timeout
         self.api = self._get_session(proxy_config)
         self.api_endpoint = endpoint
         logger.info("Connecting to Beets remote library %s", endpoint)
         try:
-            self.api.get(self.api_endpoint)
+            self._get("/")
             self.has_connection = True
         except RequestException as e:
             logger.error("Beets error - connection failed: %s", e)
@@ -273,7 +274,7 @@ class BeetsRemoteClient:
         url = self.api_endpoint + url
         logger.debug("Beets - requesting %s" % url)
         try:
-            req = self.api.get(url)
+            req = self.api.get(url, timeout=self._request_timeout)
         except RequestException as e:
             logger.error("Beets - Request %s, failed with error %s", url, e)
             return None
