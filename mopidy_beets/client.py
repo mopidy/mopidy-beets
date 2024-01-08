@@ -57,13 +57,7 @@ class BeetsRemoteClient:
         self._request_timeout = request_timeout
         self.api = self._get_session(proxy_config)
         self.api_endpoint = endpoint
-        logger.info("Connecting to Beets remote library %s", endpoint)
-        try:
-            self._get("/")
-            self.has_connection = True
-        except RequestException as e:
-            logger.error("Beets error - connection failed: %s", e)
-            self.has_connection = False
+        logger.info("Configured for Beets remote library %s", endpoint)
 
     def _get_session(self, proxy_config):
         proxy = httpclient.format_proxy(proxy_config)

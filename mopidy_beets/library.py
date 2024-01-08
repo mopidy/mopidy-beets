@@ -89,9 +89,6 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         logger.debug(
             'Beets Query (exact=%s) within "%s": %s', exact, uris, query
         )
-        if not self.remote.has_connection:
-            return SearchResult(uri="beets:search-disconnected", tracks=[])
-
         self._validate_query(query)
         search_list = []
         for field, values in query.items():
@@ -178,10 +175,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
     def get_distinct(self, field, query=None):
         logger.debug("Beets distinct query: %s (uri=%s)", field, query)
-        if not self.remote.has_connection:
-            return []
-        else:
-            return self.remote.get_sorted_unique_track_attributes(field)
+        return self.remote.get_sorted_unique_track_attributes(field)
 
     def _validate_query(self, query):
         for values in query.values():
