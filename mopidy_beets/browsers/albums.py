@@ -13,7 +13,7 @@ class AlbumsCategoryBrowser(GenericBrowserBase):
         keys = self.api.get_sorted_unique_album_attributes(self.field)
         return [
             models.Ref.directory(
-                name=key, uri=assemble_uri(self.ref.uri, id_value=key)
+                name=str(key), uri=assemble_uri(self.ref.uri, id_value=key)
             )
             for key in keys
         ]
