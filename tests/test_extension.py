@@ -1,9 +1,12 @@
-import unittest
+from unittest import mock
 
 from mopidy_beets import BeetsExtension
+from mopidy_beets.actor import BeetsBackend
+
+from . import MopidyBeetsTest
 
 
-class ExtensionTest(unittest.TestCase):
+class ExtensionTest(MopidyBeetsTest):
     def test_get_default_config(self):
         ext = BeetsExtension()
 
@@ -23,4 +26,16 @@ class ExtensionTest(unittest.TestCase):
         self.assertIn("hostname", schema)
         self.assertIn("port", schema)
 
-    # TODO Write more tests
+    def test_get_backend_classes(self):
+        registry = mock.Mock()
+        ext = BeetsExtension()
+        ext.setup(registry)
+        self.assertIn(
+            mock.call("backend", BeetsBackend), registry.add.mock_calls
+        )
+
+    def test_init_backend(self):
+        backend = BeetsBackend(self.get_config(), None)
+        self.assertIsNotNone(backend)
+        backend.on_start()
+        backend.on_stop()
