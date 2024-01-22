@@ -163,7 +163,9 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 )
                 # Append composer tracks to the artist tracks (unique items).
                 tracks = list(set(artist_tracks + composer_tracks))
-                tracks.sort(key=lambda t: (t.date, t.disc_no, t.track_no))
+                tracks.sort(
+                    key=lambda t: (t.date or 0, t.disc_no or 0, t.track_no or 0)
+                )
             else:
                 logger.info("Unknown Beets lookup URI: %s", uri)
                 tracks = []
