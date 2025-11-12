@@ -135,7 +135,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         tracks = self.remote.get_tracks_by(search_list, exact, [])
         uri = "-".join(
             [
-                item if isinstance(item, str) else "=".join(item)
+                item if isinstance(item, str) else "=".join(map(str, item))
                 for item in search_list
             ]
         )
