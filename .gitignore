@@ -1,10 +1,9 @@
-*.pyc
-/*.egg-info
+*.egg-info/
+/*.lock
+/.*_cache/
 /.coverage
-/.mypy_cache/
-/.pytest_cache/
 /.tox/
-/MANIFEST
+/.venv/
 /build/
 /dist/
-/docs/_build/
+__pycache__/

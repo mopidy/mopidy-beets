@@ -64,7 +64,7 @@ class BeetsRemoteClient:
         full_user_agent = httpclient.format_user_agent(
             "/".join(
                 (
-                    mopidy_beets.BeetsExtension.dist_name,
+                    mopidy_beets.Extension.dist_name,
                     mopidy_beets.__version__,
                 )
             )

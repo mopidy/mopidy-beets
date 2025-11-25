@@ -1,20 +1,18 @@
-import os
+import pathlib
+from importlib.metadata import version
 
-import pkg_resources
 from mopidy import config, ext
 
+__version__ = version("mopidy-beets")
 
-__version__ = pkg_resources.get_distribution("Mopidy-Beets").version
 
-
-class BeetsExtension(ext.Extension):
-    dist_name = "Mopidy-Beets"
+class Extension(ext.Extension):
+    dist_name = "mopidy-beets"
     ext_name = "beets"
     version = __version__
 
     def get_default_config(self):
-        conf_file = os.path.join(os.path.dirname(__file__), "ext.conf")
-        return config.read(conf_file)
+        return config.read(pathlib.Path(__file__).parent / "ext.conf")
 
     def get_config_schema(self):
         schema = super().get_config_schema()
@@ -23,6 +21,6 @@ class BeetsExtension(ext.Extension):
         return schema
 
     def setup(self, registry):
-        from .actor import BeetsBackend
+        from mopidy_beets.actor import BeetsBackend
 
         registry.add("backend", BeetsBackend)
