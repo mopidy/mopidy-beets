@@ -8,7 +8,7 @@ authors = [{ name = "Lars Kruse", email = "devel@sumpfralle.de" }]
 classifiers = [
     "Environment :: No Input/Output (Daemon)",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT",
     "Operating System :: OS Independent",
     "Topic :: Multimedia :: Sound/Audio :: Players",
 ]
