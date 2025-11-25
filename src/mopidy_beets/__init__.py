@@ -21,6 +21,6 @@ class Extension(ext.Extension):
         return schema
 
     def setup(self, registry):
-        from mopidy_beets.actor import BeetsBackend
+        from mopidy_beets.actor import BeetsBackend  # noqa: PLC0415
 
         registry.add("backend", BeetsBackend)

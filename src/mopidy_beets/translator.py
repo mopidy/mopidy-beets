@@ -71,7 +71,7 @@ def parse_artist(data, name_keyword):
     return _apply_beets_mapping(Artist, mapping, data)
 
 
-def parse_album(data, api):
+def parse_album(data, _api):
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Album
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
@@ -92,7 +92,7 @@ def parse_track(data, api):
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
     mapping = {
-        "uri": lambda d: "beets:library:track;%s" % d["id"],
+        "uri": lambda d: f"beets:library:track;{d['id']}",
         "name": "title",
         "artists": lambda d: _filter_none([parse_artist(d, "artist")]),
         "album": lambda d, api=api: (
@@ -168,4 +168,4 @@ def assemble_uri(*args, **kwargs):
     if not isinstance(id_value, str):
         id_value = str(id_value)
     id_string = urllib.parse.quote(id_value)
-    return "%s;%s" % (base_path, id_string)
+    return f"{base_path};{id_string}"

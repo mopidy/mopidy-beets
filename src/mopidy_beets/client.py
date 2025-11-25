@@ -4,6 +4,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from http import HTTPStatus
 
 import requests
 from mopidy import httpclient
@@ -15,7 +16,7 @@ from mopidy_beets.translator import parse_album, parse_track
 logger = logging.getLogger(__name__)
 
 
-class cache:
+class cache:  # noqa: N801
     # TODO: merge this to util library
 
     def __init__(self, ctl=8, ttl=3600):
@@ -33,10 +34,9 @@ class cache:
                 age = now - last_update
                 if self._call_count >= self.ctl or age > self.ttl:
                     self._call_count = 1
-                    raise AttributeError
+                    raise AttributeError  # noqa: TRY301
 
                 self._call_count += 1
-                return value
 
             except (KeyError, AttributeError):
                 value = self.func(*args)
@@ -45,6 +45,9 @@ class cache:
 
             except TypeError:
                 return self.func(*args)
+
+            else:
+                return value
 
         return _memoized
 
@@ -60,12 +63,7 @@ class BeetsRemoteClient:
     def _get_session(self, proxy_config):
         proxy = httpclient.format_proxy(proxy_config)
         full_user_agent = httpclient.format_user_agent(
-            "/".join(
-                (
-                    mopidy_beets.Extension.dist_name,
-                    mopidy_beets.__version__,
-                )
-            )
+            f"{mopidy_beets.Extension.dist_name}/{mopidy_beets.__version__}"
         )
         session = requests.Session()
         session.proxies.update({"http": proxy, "https": proxy})
@@ -75,16 +73,15 @@ class BeetsRemoteClient:
     @cache()
     def get_tracks(self):
         track_ids = self._get("/item/").get("item_ids") or []
-        tracks = [self.get_track(track_id) for track_id in track_ids]
-        return tracks
+        return [self.get_track(track_id) for track_id in track_ids]
 
     @cache(ctl=16)
     def get_track(self, track_id):
-        return parse_track(self._get("/item/%s" % track_id), self)
+        return parse_track(self._get(f"/item/{track_id}"), self)
 
     @cache(ctl=16)
     def get_album(self, album_id):
-        return parse_album(self._get("/album/%s" % album_id), self)
+        return parse_album(self._get(f"/album/{album_id}"), self)
 
     @cache()
     def get_tracks_by(self, attributes, exact_text, sort_fields):
@@ -100,7 +97,7 @@ class BeetsRemoteClient:
         )
         return self._parse_multiple_albums(albums)
 
-    def _get_objects_by_attribute(self, base_path, attributes, exact_text, sort_fields):
+    def _get_objects_by_attribute(self, base_path, attributes, exact_text, sort_fields):  # noqa: C901
         """The beets web-api accepts queries like:
             /item/query/album_id:183/track:2
             /item/query/album:Foo
@@ -238,30 +235,31 @@ class BeetsRemoteClient:
         # art. Thus we need to ask for it and check the status code.
         url = f"{self.api_endpoint}/album/{album_id}/art"
         try:
-            request = urllib.request.urlopen(url)
+            request = urllib.request.urlopen(url)  # noqa: S310
         except OSError:
             # DNS problem or similar
             return None
         request.close()
-        return url if request.getcode() == 200 else None
+        return url if request.getcode() == HTTPStatus.OK else None
 
-    def _get(self, url, raise_not_found=False):
+    def _get(self, url, *, raise_not_found=False):
         url = self.api_endpoint + url
-        logger.debug("Beets - requesting %s" % url)
+        logger.debug(f"Beets - requesting {url}")
         try:
             req = self.api.get(url, timeout=self._request_timeout)
         except RequestException as e:
-            logger.error("Beets - Request %s, failed with error %s", url, e)
+            logger.error(f"Beets - Request {url}, failed with error {e}")  # noqa: TRY400
             return None
-        if req.status_code != 200:
+        if req.status_code != HTTPStatus.OK:
             logger.error(
                 "Beets - Request %s, failed with status code %s",
                 url,
                 req.status_code,
             )
-            if (req.status_code == 404) and raise_not_found:
+            if (req.status_code == HTTPStatus.NOT_FOUND) and raise_not_found:
                 # sometimes we need to distinguish empty and 'not found'
-                raise KeyError("URL not found: %s" % url)
+                msg = f"URL not found: {url}"
+                raise KeyError(msg)
             return None
         return req.json()
 
@@ -271,7 +269,7 @@ class BeetsRemoteClient:
             try:
                 albums.append(parse_album(dataset, self))
             except (ValueError, KeyError) as exc:
-                logger.info("Beets - Failed to parse album data: %s", exc)
+                logger.info(f"Beets - Failed to parse album data: {exc}")
         return [album for album in albums if album]
 
     def _parse_multiple_tracks(self, track_datasets):
@@ -280,5 +278,5 @@ class BeetsRemoteClient:
             try:
                 tracks.append(parse_track(dataset, self))
             except (ValueError, KeyError) as exc:
-                logger.info("Beets - Failed to parse track data: %s", exc)
+                logger.info(f"Beets - Failed to parse track data: {exc}")
         return [track for track in tracks if track]

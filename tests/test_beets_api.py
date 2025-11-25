@@ -1,8 +1,10 @@
+from typing import ClassVar
+
 from .helper_beets import BeetsAlbum, BeetsAPILibraryTest, BeetsTrack
 
 
 class LookupTest(BeetsAPILibraryTest):
-    BEETS_ALBUMS = [
+    BEETS_ALBUMS: ClassVar[list[BeetsAlbum]] = [
         BeetsAlbum(
             "Album-Title-1",
             "Album-Artist-1",
@@ -28,7 +30,7 @@ class LookupTest(BeetsAPILibraryTest):
     )
 
     def get_uri(self, *components):
-        return ":".join(("beets", "library") + components)
+        return ":".join(("beets", "library", *components))
 
     def test_categories(self):
         response = self.backend.library.browse("beets:library")

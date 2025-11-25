@@ -1,9 +1,11 @@
 import logging
 import re
+from typing import ClassVar
 
 from mopidy import backend, models
 from mopidy.models import SearchResult
 
+from mopidy_beets.browsers import GenericBrowserBase
 from mopidy_beets.browsers.albums import (
     AlbumsByArtistBrowser,
     AlbumsByGenreBrowser,
@@ -22,7 +24,7 @@ DATE_REGEX = re.compile(
 
 class BeetsLibraryProvider(backend.LibraryProvider):
     root_directory = models.Ref.directory(uri="beets:library", name="Beets library")
-    root_categorie_list = [
+    root_categorie_list: ClassVar[list[tuple[str, str, type[GenericBrowserBase]]]] = [
         ("albums-by-artist", "Albums by Artist", AlbumsByArtistBrowser),
         ("albums-by-genre", "Albums by Genre", AlbumsByGenreBrowser),
         ("albums-by-year", "Albums by Year", AlbumsByYearBrowser),
@@ -39,7 +41,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             browser = browser_class(ref, self.remote)
             self.category_browsers.append(browser)
 
-    def browse(self, uri):
+    def browse(self, uri):  # noqa: PLR0911
         logger.debug("Browsing Beets at: %s", uri)
         path, item_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
         if path is None:
@@ -55,10 +57,12 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             try:
                 album_id = int(item_id)
             except ValueError:
-                logger.error("Beets - invalid album ID in URI: %s", uri)
+                logger.error(f"Beets - invalid album ID in URI: {uri}")  # noqa: TRY400
                 return []
             tracks = self.remote.get_tracks_by(
-                [("album_id", album_id)], True, ["track+"]
+                [("album_id", album_id)],
+                True,  # noqa: FBT003
+                ["track+"],
             )
             return [
                 models.Ref.track(uri=track.uri, name=track.name) for track in tracks
@@ -75,7 +79,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         logger.error("Beets - Invalid browse URI: %s / %s", uri, path)
         return []
 
-    def search(self, query=None, uris=None, exact=False):
+    def search(self, query=None, uris=None, exact=False):  # noqa: C901, FBT002, PLR0912
         # TODO: restrict the result to 'uris'
         logger.debug('Beets Query (exact=%s) within "%s": %s', exact, uris, query)
         self._validate_query(query)
@@ -141,14 +145,20 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 tracks = [self.remote.get_track(item_id)]
             elif path == "album":
                 tracks = self.remote.get_tracks_by(
-                    [("album_id", item_id)], True, ("disc+", "track+")
+                    [("album_id", item_id)],
+                    True,  # noqa: FBT003
+                    ("disc+", "track+"),
                 )
             elif path == "artist":
                 artist_tracks = self.remote.get_tracks_by(
-                    [("artist", item_id)], True, []
+                    [("artist", item_id)],
+                    True,  # noqa: FBT003
+                    [],
                 )
                 composer_tracks = self.remote.get_tracks_by(
-                    [("composer", item_id)], True, []
+                    [("composer", item_id)],
+                    True,  # noqa: FBT003
+                    [],
                 )
                 # Append composer tracks to the artist tracks (unique items).
                 tracks = list(set(artist_tracks + composer_tracks))
@@ -170,7 +180,9 @@ class BeetsLibraryProvider(backend.LibraryProvider):
     def _validate_query(self, query):
         for values in query.values():
             if not values:
-                raise LookupError("Missing query")
+                msg = "Missing query"
+                raise LookupError(msg)
             for value in values:
                 if not value:
-                    raise LookupError("Missing query")
+                    msg = "Missing query"
+                    raise LookupError(msg)
