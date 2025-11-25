@@ -5,7 +5,6 @@ import urllib.request
 
 from mopidy.models import Album, Artist, Track
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,11 +22,8 @@ def parse_date(data):
         return None
     # mopidy accepts dates as 'YYYY' or 'YYYY-MM-DD'
     if day is not None and month is not None:
-        return "{year:04d}-{month:02d}-{day:02d}".format(
-            day=day, month=month, year=year
-        )
-    else:
-        return "{year:04d}".format(year=year)
+        return f"{year:04d}-{month:02d}-{day:02d}"
+    return f"{year:04d}"
 
 
 def _apply_beets_mapping(target_class, mapping, data):
@@ -60,9 +56,7 @@ def _filter_none(values):
 def parse_artist(data, name_keyword):
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Artist
     mapping = {
-        "uri": lambda d: assemble_uri(
-            "beets:library:artist", id_value=d[name_keyword]
-        ),
+        "uri": lambda d: assemble_uri("beets:library:artist", id_value=d[name_keyword]),
         "name": name_keyword,
     }
     if name_keyword == "artist":
@@ -77,7 +71,7 @@ def parse_artist(data, name_keyword):
     return _apply_beets_mapping(Artist, mapping, data)
 
 
-def parse_album(data, api):
+def parse_album(data, _api):
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Album
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
@@ -98,7 +92,7 @@ def parse_track(data, api):
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
     mapping = {
-        "uri": lambda d: "beets:library:track;%s" % d["id"],
+        "uri": lambda d: f"beets:library:track;{d['id']}",
         "name": "title",
         "artists": lambda d: _filter_none([parse_artist(d, "artist")]),
         "album": lambda d, api=api: (
@@ -170,9 +164,8 @@ def assemble_uri(*args, **kwargs):
     id_value = kwargs.pop("id_value", None)
     if id_value is None:
         return base_path
-    else:
-        # convert numbers and other non-strings
-        if not isinstance(id_value, str):
-            id_value = str(id_value)
-        id_string = urllib.parse.quote(id_value)
-        return "%s;%s" % (base_path, id_string)
+    # convert numbers and other non-strings
+    if not isinstance(id_value, str):
+        id_value = str(id_value)
+    id_string = urllib.parse.quote(id_value)
+    return f"{base_path};{id_string}"

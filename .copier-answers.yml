@@ -1,0 +1,9 @@
+_commit: v2.2.0
+_src_path: gh:mopidy/mopidy-ext-template
+author_email: devel@sumpfralle.de
+author_full_name: Lars Kruse
+dist_name: mopidy-beets
+ext_name: beets
+github_username: mopidy
+short_description: Mopidy extension for playing music from a music collection managed
+    via Beets

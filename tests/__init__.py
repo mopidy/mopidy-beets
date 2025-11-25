@@ -1,11 +1,10 @@
 import logging
-import os
 import unittest
+from pathlib import Path
 
 from mopidy_beets.actor import BeetsBackend
 
-
-TEST_DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), "data")
+TEST_DATA_DIRECTORY = Path(__file__).parent.resolve() / "data"
 
 
 class MopidyBeetsTest(unittest.TestCase):

@@ -1,34 +1,34 @@
-import collections
 import logging
-import os
 import random
 import threading
 import time
-import typing
+from typing import ClassVar, NamedTuple
 
 import beets.test._common
 import werkzeug.serving
-from beets.util import bytestring_path
 from beets.test.helper import TestHelper as BeetsTestHelper
+from beets.util import bytestring_path
 from beetsplug.web import app as beets_web_app
 
-from . import MopidyBeetsTest, TEST_DATA_DIRECTORY
+from . import TEST_DATA_DIRECTORY, MopidyBeetsTest
 
 
-BeetsTrack = collections.namedtuple(
-    "BeetsTrack", ("title", "artist", "track"), defaults=(None, None)
-)
-BeetsAlbum = collections.namedtuple(
-    "BeetsAlbum",
-    ("title", "artist", "tracks", "genre", "year"),
-    defaults=("", 0),
-)
+class BeetsTrack(NamedTuple):
+    title: str
+    artist: str | None = None
+    track: int | None = None
+
+
+class BeetsAlbum(NamedTuple):
+    title: str
+    artist: str
+    tracks: list
+    genre: str = ""
+    year: int = 0
 
 
 # Manipulate beets's ressource path before any action wants to access these files.
-beets.test._common.RSRC = bytestring_path(
-    os.path.abspath(os.path.join(TEST_DATA_DIRECTORY, "beets-rsrc"))
-)
+beets.test._common.RSRC = bytestring_path(TEST_DATA_DIRECTORY / "beets-rsrc")  # noqa: SLF001
 
 
 class BeetsLibrary(BeetsTestHelper):
@@ -37,14 +37,14 @@ class BeetsLibrary(BeetsTestHelper):
     def __init__(
         self,
         bind_host: str = "127.0.0.1",
-        bind_port: typing.Optional[int] = None,
+        bind_port: int | None = None,
     ) -> None:
         self._app = beets_web_app
         # allow exceptions to propagate to the caller of the test client
         self._app.testing = True
         self._bind_host = bind_host
         if bind_port is None:
-            self._bind_port = random.randint(10000, 32767)
+            self._bind_port = random.randint(10000, 32767)  # noqa: S311
         else:
             self._bind_port = bind_port
         self._server = None
@@ -56,9 +56,7 @@ class BeetsLibrary(BeetsTestHelper):
         self._server = werkzeug.serving.make_server(
             self._bind_host, self._bind_port, self._app
         )
-        self._server_thread = threading.Thread(
-            target=self._server.serve_forever
-        )
+        self._server_thread = threading.Thread(target=self._server.serve_forever)
 
     def start(self):
         self._server_thread.start()
@@ -85,7 +83,7 @@ class BeetsAPILibraryTest(MopidyBeetsTest):
     - accesses to `self.backend.library` will query the Beets library via the web plugin
     """
 
-    BEETS_ALBUMS: list[BeetsAlbum] = []
+    BEETS_ALBUMS: ClassVar[list[BeetsAlbum]] = []
 
     def setUp(self):
         logging.getLogger("beets").disabled = True
