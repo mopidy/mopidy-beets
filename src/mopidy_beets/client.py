@@ -102,9 +102,7 @@ class BeetsRemoteClient:
         )
         return self._parse_multiple_albums(albums)
 
-    def _get_objects_by_attribute(
-        self, base_path, attributes, exact_text, sort_fields
-    ):
+    def _get_objects_by_attribute(self, base_path, attributes, exact_text, sort_fields):
         """The beets web-api accepts queries like:
             /item/query/album_id:183/track:2
             /item/query/album:Foo
@@ -147,9 +145,7 @@ class BeetsRemoteClient:
                 key = attribute[0].lower()
                 value = attribute[1]
                 query_parts.append(
-                    "{}:{}".format(
-                        quote_and_encode(key), quote_and_encode(value)
-                    )
+                    "{}:{}".format(quote_and_encode(key), quote_and_encode(value))
                 )
                 # Try to add a simple regex filter, if we look for a string.
                 # This will reduce the resource consumption of the query on
@@ -160,9 +156,7 @@ class BeetsRemoteClient:
                         quote_and_encode(key), quote_and_encode(regex_query)
                     )
                     logger.debug(
-                        "Beets - regular expression query: {}".format(
-                            beets_query
-                        )
+                        "Beets - regular expression query: {}".format(beets_query)
                     )
                     query_parts.append(beets_query)
                 else:
@@ -173,9 +167,7 @@ class BeetsRemoteClient:
             if (len(sort_field) > 1) and (sort_field[-1] in ("-", "+")):
                 query_parts.append(quote_and_encode(sort_field))
             else:
-                logger.info(
-                    "Beets - invalid sorting field ignore: %s", sort_field
-                )
+                logger.info("Beets - invalid sorting field ignore: %s", sort_field)
         query_string = "/".join(query_parts)
         query_url = "{0}/query/{1}".format(base_path, query_string)
         logger.debug("Beets query: %s", query_url)
@@ -215,9 +207,7 @@ class BeetsRemoteClient:
         if not hasattr(self, "__legacy_beets_api_detected"):
             try:
                 result = self._get(
-                    "{0}/values/{1}?sort_key={2}".format(
-                        base_url, field, sort_field
-                    ),
+                    "{0}/values/{1}?sort_key={2}".format(base_url, field, sort_field),
                     raise_not_found=True,
                 )
             except KeyError:

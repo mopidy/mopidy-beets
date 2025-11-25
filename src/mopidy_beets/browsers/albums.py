@@ -19,9 +19,7 @@ class AlbumsCategoryBrowser(GenericBrowserBase):
         ]
 
     def get_directory(self, key):
-        albums = self.api.get_albums_by(
-            [(self.field, key)], True, self.sort_fields
-        )
+        albums = self.api.get_albums_by([(self.field, key)], True, self.sort_fields)
         return [
             models.Ref.album(uri=album.uri, name=self._get_label(album))
             for album in albums

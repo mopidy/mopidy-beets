@@ -22,9 +22,7 @@ DATE_REGEX = re.compile(
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
-    root_directory = models.Ref.directory(
-        uri="beets:library", name="Beets library"
-    )
+    root_directory = models.Ref.directory(uri="beets:library", name="Beets library")
     root_categorie_list = [
         ("albums-by-artist", "Albums by Artist", AlbumsByArtistBrowser),
         ("albums-by-genre", "Albums by Genre", AlbumsByGenreBrowser),
@@ -64,17 +62,14 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 [("album_id", album_id)], True, ["track+"]
             )
             return [
-                models.Ref.track(uri=track.uri, name=track.name)
-                for track in tracks
+                models.Ref.track(uri=track.uri, name=track.name) for track in tracks
             ]
         else:
             # show a generic category directory
             for browser in self.category_browsers:
                 if (
                     path
-                    == parse_uri(
-                        browser.ref.uri, uri_prefix=self.root_directory.uri
-                    )[0]
+                    == parse_uri(browser.ref.uri, uri_prefix=self.root_directory.uri)[0]
                 ):
                     if item_id is None:
                         return browser.get_toplevel()
@@ -86,9 +81,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
 
     def search(self, query=None, uris=None, exact=False):
         # TODO: restrict the result to 'uris'
-        logger.debug(
-            'Beets Query (exact=%s) within "%s": %s', exact, uris, query
-        )
+        logger.debug('Beets Query (exact=%s) within "%s": %s', exact, uris, query)
         self._validate_query(query)
         search_list = []
         for field, values in query.items():

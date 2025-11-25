@@ -40,24 +40,18 @@ class LookupTest(BeetsAPILibraryTest):
 
     def test_browse_albums_by_artist(self):
         response = self.backend.library.browse("beets:library:albums-by-artist")
-        expected_album_artists = sorted(
-            album.artist for album in self.BEETS_ALBUMS
-        )
+        expected_album_artists = sorted(album.artist for album in self.BEETS_ALBUMS)
         received_album_artists = [item.name for item in response]
         self.assertEqual(received_album_artists, expected_album_artists)
 
     def test_browse_albums_by_genre(self):
         response = self.backend.library.browse("beets:library:albums-by-genre")
-        expected_album_genres = sorted(
-            album.genre for album in self.BEETS_ALBUMS
-        )
+        expected_album_genres = sorted(album.genre for album in self.BEETS_ALBUMS)
         received_album_genres = [item.name for item in response]
         self.assertEqual(received_album_genres, expected_album_genres)
 
     def test_browse_albums_by_year(self):
         response = self.backend.library.browse("beets:library:albums-by-year")
-        expected_album_genres = sorted(
-            str(album.year) for album in self.BEETS_ALBUMS
-        )
+        expected_album_genres = sorted(str(album.year) for album in self.BEETS_ALBUMS)
         received_album_genres = [item.name for item in response]
         self.assertEqual(received_album_genres, expected_album_genres)

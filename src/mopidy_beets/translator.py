@@ -60,9 +60,7 @@ def _filter_none(values):
 def parse_artist(data, name_keyword):
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Artist
     mapping = {
-        "uri": lambda d: assemble_uri(
-            "beets:library:artist", id_value=d[name_keyword]
-        ),
+        "uri": lambda d: assemble_uri("beets:library:artist", id_value=d[name_keyword]),
         "name": name_keyword,
     }
     if name_keyword == "artist":

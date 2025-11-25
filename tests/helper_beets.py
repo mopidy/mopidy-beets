@@ -56,9 +56,7 @@ class BeetsLibrary(BeetsTestHelper):
         self._server = werkzeug.serving.make_server(
             self._bind_host, self._bind_port, self._app
         )
-        self._server_thread = threading.Thread(
-            target=self._server.serve_forever
-        )
+        self._server_thread = threading.Thread(target=self._server.serve_forever)
 
     def start(self):
         self._server_thread.start()
