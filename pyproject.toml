@@ -93,13 +93,13 @@ ignore = [
     "ANN202", # missing-return-type-private-function  # TODO
     "ANN204", # missing-return-type-special-method  # TODO
     "ANN205", # missing-return-type-static-method  # TODO
-    "D",     # pydocstyle
-    "D203",  # one-blank-line-before-class
-    "D213",  # multi-line-summary-second-line
+    "D",      # pydocstyle
+    "D203",   # one-blank-line-before-class
+    "D213",   # multi-line-summary-second-line
     "FIX002", # line-contains-todo  # TODO
-    "G004",  # logging-f-string
-    "TD002", # missing-todo-author
-    "TD003", # missing-todo-link
+    "G004",   # logging-f-string
+    "TD002",  # missing-todo-author
+    "TD003",  # missing-todo-link
     #
     # Conflicting with `ruff format`
     "COM812", # missing-trailing-comma
