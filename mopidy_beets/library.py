@@ -175,6 +175,15 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             # the newer method (mopidy>=1.0): return a dict of uris and tracks
             return {uri: self.lookup(uri=uri) for uri in uris}
 
+    def get_images(self, uris):
+        images = {}
+        for uri in uris:
+            path, item_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
+            if path == "album" and isinstance(item_id, int):
+                url = self.remote.get_album_art_url(item_id)
+                images[uri] = [models.Image(uri=url)]
+        return images
+
     def get_distinct(self, field, query=None):
         logger.debug("Beets distinct query: %s (uri=%s)", field, query)
         return self.remote.get_sorted_unique_track_attributes(field)
