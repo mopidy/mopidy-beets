@@ -4,16 +4,14 @@ import os
 import random
 import threading
 import time
-import typing
 
 import beets.test._common
 import werkzeug.serving
-from beets.util import bytestring_path
 from beets.test.helper import TestHelper as BeetsTestHelper
+from beets.util import bytestring_path
 from beetsplug.web import app as beets_web_app
 
-from . import MopidyBeetsTest, TEST_DATA_DIRECTORY
-
+from . import TEST_DATA_DIRECTORY, MopidyBeetsTest
 
 BeetsTrack = collections.namedtuple(
     "BeetsTrack", ("title", "artist", "track"), defaults=(None, None)
@@ -37,7 +35,7 @@ class BeetsLibrary(BeetsTestHelper):
     def __init__(
         self,
         bind_host: str = "127.0.0.1",
-        bind_port: typing.Optional[int] = None,
+        bind_port: int | None = None,
     ) -> None:
         self._app = beets_web_app
         # allow exceptions to propagate to the caller of the test client

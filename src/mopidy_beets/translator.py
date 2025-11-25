@@ -5,7 +5,6 @@ import urllib.request
 
 from mopidy.models import Album, Artist, Track
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,11 +22,8 @@ def parse_date(data):
         return None
     # mopidy accepts dates as 'YYYY' or 'YYYY-MM-DD'
     if day is not None and month is not None:
-        return "{year:04d}-{month:02d}-{day:02d}".format(
-            day=day, month=month, year=year
-        )
-    else:
-        return "{year:04d}".format(year=year)
+        return f"{year:04d}-{month:02d}-{day:02d}"
+    return f"{year:04d}"
 
 
 def _apply_beets_mapping(target_class, mapping, data):
@@ -168,9 +164,8 @@ def assemble_uri(*args, **kwargs):
     id_value = kwargs.pop("id_value", None)
     if id_value is None:
         return base_path
-    else:
-        # convert numbers and other non-strings
-        if not isinstance(id_value, str):
-            id_value = str(id_value)
-        id_string = urllib.parse.quote(id_value)
-        return "%s;%s" % (base_path, id_string)
+    # convert numbers and other non-strings
+    if not isinstance(id_value, str):
+        id_value = str(id_value)
+    id_string = urllib.parse.quote(id_value)
+    return "%s;%s" % (base_path, id_string)

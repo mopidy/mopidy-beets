@@ -44,10 +44,9 @@ class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
             return "{0} - {1} ({2})".format(
                 artists, album.name, album.date.split("-")[0]
             )
-        elif artists:
-            return "{0} - {1}".format(artists, album.name)
-        else:
-            return album.name
+        if artists:
+            return f"{artists} - {album.name}"
+        return album.name
 
 
 class AlbumsByYearBrowser(AlbumsCategoryBrowser):
@@ -63,6 +62,5 @@ class AlbumsByYearBrowser(AlbumsCategoryBrowser):
     def _get_label(self, album):
         artists = " / ".join([artist.name for artist in album.artists])
         if artists:
-            return "{0} - {1}".format(artists, album.name)
-        else:
-            return album.name
+            return f"{artists} - {album.name}"
+        return album.name

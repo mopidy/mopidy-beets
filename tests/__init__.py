@@ -4,7 +4,6 @@ import unittest
 
 from mopidy_beets.actor import BeetsBackend
 
-
 TEST_DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), "data")
 
 

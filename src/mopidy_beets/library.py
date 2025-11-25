@@ -11,7 +11,6 @@ from mopidy_beets.browsers.albums import (
 )
 from mopidy_beets.translator import assemble_uri, parse_uri
 
-
 logger = logging.getLogger(__name__)
 
 # match dates of the following format:
@@ -46,12 +45,12 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         if path is None:
             logger.error("Beets - failed to parse uri: %s", uri)
             return []
-        elif uri == self.root_directory.uri:
+        if uri == self.root_directory.uri:
             # top level - show the categories
             refs = [browser.ref for browser in self.category_browsers]
             refs.sort(key=lambda item: item.name)
             return refs
-        elif path == "album":
+        if path == "album":
             # show an album
             try:
                 album_id = int(item_id)
@@ -64,20 +63,17 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             return [
                 models.Ref.track(uri=track.uri, name=track.name) for track in tracks
             ]
-        else:
-            # show a generic category directory
-            for browser in self.category_browsers:
-                if (
-                    path
-                    == parse_uri(browser.ref.uri, uri_prefix=self.root_directory.uri)[0]
-                ):
-                    if item_id is None:
-                        return browser.get_toplevel()
-                    else:
-                        return browser.get_directory(item_id)
-            else:
-                logger.error("Beets - Invalid browse URI: %s / %s", uri, path)
-                return []
+        # show a generic category directory
+        for browser in self.category_browsers:
+            if (
+                path
+                == parse_uri(browser.ref.uri, uri_prefix=self.root_directory.uri)[0]
+            ):
+                if item_id is None:
+                    return browser.get_toplevel()
+                return browser.get_directory(item_id)
+        logger.error("Beets - Invalid browse URI: %s / %s", uri, path)
+        return []
 
     def search(self, query=None, uris=None, exact=False):
         # TODO: restrict the result to 'uris'
@@ -164,9 +160,8 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 tracks = []
             # remove occourences of None
             return [track for track in tracks if track]
-        else:
-            # the newer method (mopidy>=1.0): return a dict of uris and tracks
-            return {uri: self.lookup(uri=uri) for uri in uris}
+        # the newer method (mopidy>=1.0): return a dict of uris and tracks
+        return {uri: self.lookup(uri=uri) for uri in uris}
 
     def get_distinct(self, field, query=None):
         logger.debug("Beets distinct query: %s (uri=%s)", field, query)

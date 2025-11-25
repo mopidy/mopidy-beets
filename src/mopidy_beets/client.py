@@ -5,14 +5,12 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from mopidy import httpclient
-
 import requests
+from mopidy import httpclient
 from requests.exceptions import RequestException
 
 import mopidy_beets
 from mopidy_beets.translator import parse_album, parse_track
-
 
 logger = logging.getLogger(__name__)
 
@@ -144,20 +142,16 @@ class BeetsRemoteClient:
                 # returns lower case attributes
                 key = attribute[0].lower()
                 value = attribute[1]
-                query_parts.append(
-                    "{}:{}".format(quote_and_encode(key), quote_and_encode(value))
-                )
+                query_parts.append(f"{quote_and_encode(key)}:{quote_and_encode(value)}")
                 # Try to add a simple regex filter, if we look for a string.
                 # This will reduce the resource consumption of the query on
                 # the server side (and for our 'exact' matching below).
                 if exact_text and isinstance(value, str):
-                    regex_query = "^{}$".format(re.escape(value))
-                    beets_query = "{}::{}".format(
-                        quote_and_encode(key), quote_and_encode(regex_query)
+                    regex_query = f"^{re.escape(value)}$"
+                    beets_query = (
+                        f"{quote_and_encode(key)}::{quote_and_encode(regex_query)}"
                     )
-                    logger.debug(
-                        "Beets - regular expression query: {}".format(beets_query)
-                    )
+                    logger.debug(f"Beets - regular expression query: {beets_query}")
                     query_parts.append(beets_query)
                 else:
                     # in all other cases: use non-regex matching (if requested)
@@ -169,7 +163,7 @@ class BeetsRemoteClient:
             else:
                 logger.info("Beets - invalid sorting field ignore: %s", sort_field)
         query_string = "/".join(query_parts)
-        query_url = "{0}/query/{1}".format(base_path, query_string)
+        query_url = f"{base_path}/query/{query_string}"
         logger.debug("Beets query: %s", query_url)
         items = self._get(query_url)["results"]
         if exact_text:
@@ -179,10 +173,9 @@ class BeetsRemoteClient:
                 if key is None:
                     # the value must match one of the item attributes
                     items = [item for item in items if value in item.values()]
-                else:
-                    # filtering is necessary only for text based attributes
-                    if items and isinstance(items[0][key], str):
-                        items = [item for item in items if item[key] == value]
+                # filtering is necessary only for text based attributes
+                elif items and isinstance(items[0][key], str):
+                    items = [item for item in items if item[key] == value]
         return items
 
     @cache()
@@ -207,7 +200,7 @@ class BeetsRemoteClient:
         if not hasattr(self, "__legacy_beets_api_detected"):
             try:
                 result = self._get(
-                    "{0}/values/{1}?sort_key={2}".format(base_url, field, sort_field),
+                    f"{base_url}/values/{field}?sort_key={sort_field}",
                     raise_not_found=True,
                 )
             except KeyError:
@@ -227,9 +220,7 @@ class BeetsRemoteClient:
                 return result["values"]
         # Fallback: use manual filtering (requires too much time and memory for
         # most collections).
-        sorted_items = self._get("{0}/query/{1}+".format(base_url, sort_field))[
-            "results"
-        ]
+        sorted_items = self._get(f"{base_url}/query/{sort_field}+")["results"]
         # extract the wanted field and remove all duplicates
         unique_values = []
         for item in sorted_items:
@@ -239,16 +230,16 @@ class BeetsRemoteClient:
         return unique_values
 
     def get_track_stream_url(self, track_id):
-        return "{0}/item/{1}/file".format(self.api_endpoint, track_id)
+        return f"{self.api_endpoint}/item/{track_id}/file"
 
     @cache(ctl=32)
     def get_album_art_url(self, album_id):
         # Sadly we cannot determine, if the Beets library really contains album
         # art. Thus we need to ask for it and check the status code.
-        url = "{0}/album/{1}/art".format(self.api_endpoint, album_id)
+        url = f"{self.api_endpoint}/album/{album_id}/art"
         try:
             request = urllib.request.urlopen(url)
-        except IOError:
+        except OSError:
             # DNS problem or similar
             return None
         request.close()
@@ -271,10 +262,8 @@ class BeetsRemoteClient:
             if (req.status_code == 404) and raise_not_found:
                 # sometimes we need to distinguish empty and 'not found'
                 raise KeyError("URL not found: %s" % url)
-            else:
-                return None
-        else:
-            return req.json()
+            return None
+        return req.json()
 
     def _parse_multiple_albums(self, album_datasets):
         albums = []

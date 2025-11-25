@@ -1,12 +1,10 @@
 import logging
 
-from mopidy import backend
-
 import pykka
+from mopidy import backend
 
 from .client import BeetsRemoteClient
 from .library import BeetsLibraryProvider
-
 
 logger = logging.getLogger(__name__)
 
