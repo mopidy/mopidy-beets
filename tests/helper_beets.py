@@ -6,6 +6,7 @@ from typing import ClassVar, NamedTuple
 
 import beets.test._common
 import werkzeug.serving
+from beets.test.helper import PluginMixin as BeetsPluginMixin
 from beets.test.helper import TestHelper as BeetsTestHelper
 from beets.util import bytestring_path
 from beetsplug.web import app as beets_web_app
@@ -31,8 +32,10 @@ class BeetsAlbum(NamedTuple):
 beets.test._common.RSRC = bytestring_path(TEST_DATA_DIRECTORY / "beets-rsrc")  # noqa: SLF001
 
 
-class BeetsLibrary(BeetsTestHelper):
+class BeetsLibrary(BeetsPluginMixin, BeetsTestHelper):
     """Provide a temporary Beets library for testing against a real Beets web plugin."""
+
+    db_on_disk = True
 
     def __init__(
         self,
@@ -49,7 +52,7 @@ class BeetsLibrary(BeetsTestHelper):
             self._bind_port = bind_port
         self._server = None
 
-        self.setup_beets(disk=True)
+        self.setup_beets()
         self._app.config["lib"] = self.lib
         self.load_plugins("web")
         # prepare the server instance
