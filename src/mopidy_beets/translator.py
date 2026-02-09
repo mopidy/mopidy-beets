@@ -81,7 +81,7 @@ def parse_album(data, _api):
         "artists": lambda d: _filter_none([parse_artist(d, "albumartist")]),
         "num_tracks": "tracktotal",
         "num_discs": "disctotal",
-        "date": lambda d: parse_date(d),
+        "date": parse_date,
         "musicbrainz_id": "mb_albumid",
     }
     return _apply_beets_mapping(Album, mapping, data)
@@ -103,7 +103,7 @@ def parse_track(data, api):
         "genre": "genre",
         "track_no": "track",
         "disc_no": "disc",
-        "date": lambda d: parse_date(d),
+        "date": parse_date,
         "length": lambda d: int(d.get("length", 0) * 1000),
         "bitrate": lambda d: int(d.get("bitrate", 0) / 1000),
         "comment": "comments",
