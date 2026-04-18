@@ -1,17 +1,24 @@
+from __future__ import annotations
+
 import logging
 import re
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar, override
 
-from mopidy import backend, models
-from mopidy.models import SearchResult
+from mopidy import backend
+from mopidy.models import Ref, SearchResult, Track
+from mopidy.types import DistinctField, Query, SearchField, Uri
 
-from mopidy_beets.browsers import GenericBrowserBase
 from mopidy_beets.browsers.albums import (
     AlbumsByArtistBrowser,
     AlbumsByGenreBrowser,
     AlbumsByYearBrowser,
 )
 from mopidy_beets.translator import assemble_uri, parse_uri
+
+if TYPE_CHECKING:
+    from mopidy_beets.actor import BeetsBackend
+    from mopidy_beets.browsers import GenericBrowserBase
+    from mopidy_beets.client import BeetsRemoteClient
 
 logger = logging.getLogger(__name__)
 
@@ -23,26 +30,37 @@ DATE_REGEX = re.compile(
 
 
 class BeetsLibraryProvider(backend.LibraryProvider):
-    root_directory = models.Ref.directory(uri="beets:library", name="Beets library")
+    root_directory = Ref.directory(
+        uri=Uri("beets:library"),
+        name="Beets library",
+    )
     root_categorie_list: ClassVar[list[tuple[str, str, type[GenericBrowserBase]]]] = [
         ("albums-by-artist", "Albums by Artist", AlbumsByArtistBrowser),
         ("albums-by-genre", "Albums by Genre", AlbumsByGenreBrowser),
         ("albums-by-year", "Albums by Year", AlbumsByYearBrowser),
     ]
 
-    def __init__(self, *args, **kwargs):
+    backend: BeetsBackend
+    remote: BeetsRemoteClient
+
+    @override
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        assert self.root_directory  # noqa: S101
         self.remote = self.backend.beets_api
         self.category_browsers = []
         for key, label, browser_class in self.root_categorie_list:
-            ref = models.Ref.directory(
-                name=label, uri=assemble_uri(self.root_directory.uri, key)
+            ref = Ref.directory(
+                name=label,
+                uri=assemble_uri(self.root_directory.uri, key),
             )
             browser = browser_class(ref, self.remote)
             self.category_browsers.append(browser)
 
-    def browse(self, uri):  # noqa: PLR0911
+    @override
+    def browse(self, uri: Uri) -> list[Ref]:  # noqa: PLR0911
         logger.debug("Browsing Beets at: %s", uri)
+        assert self.root_directory  # noqa: S101
         path, item_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
         if path is None:
             logger.error("Beets - failed to parse uri: %s", uri)
@@ -54,6 +72,8 @@ class BeetsLibraryProvider(backend.LibraryProvider):
             return refs
         if path == "album":
             # show an album
+            if item_id is None:
+                return []
             try:
                 album_id = int(item_id)
             except ValueError:
@@ -61,12 +81,10 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                 return []
             tracks = self.remote.get_tracks_by(
                 [("album_id", album_id)],
-                True,  # noqa: FBT003
-                ["track+"],
+                exact_text=True,
+                sort_fields=["track+"],
             )
-            return [
-                models.Ref.track(uri=track.uri, name=track.name) for track in tracks
-            ]
+            return [Ref.track(uri=t.uri, name=t.name) for t in tracks]
         # show a generic category directory
         for browser in self.category_browsers:
             if (
@@ -79,7 +97,13 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         logger.error("Beets - Invalid browse URI: %s / %s", uri, path)
         return []
 
-    def search(self, query=None, uris=None, exact=False):  # noqa: C901, FBT002, PLR0912
+    @override
+    def search(  # noqa: C901, PLR0912
+        self,
+        query: Query[SearchField],
+        uris: list[Uri] | None = None,
+        exact: bool = False,
+    ) -> SearchResult:
         # TODO: restrict the result to 'uris'
         logger.debug('Beets Query (exact=%s) within "%s": %s', exact, uris, query)
         self._validate_query(query)
@@ -109,7 +133,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     # supported date formats: YYYY, YYYY-MM, YYYY-MM-DD
                     # Days and months may consist of one or two digits.
                     # A slash (instead of a dash) is acceptable as a separator.
-                    match = DATE_REGEX.search(val)
+                    match = DATE_REGEX.search(str(val))
                     if match:
                         # remove None values
                         for key, value in match.groupdict().items():
@@ -125,55 +149,64 @@ class BeetsLibraryProvider(backend.LibraryProvider):
                     logger.info("Beets: ignoring unknown query key: %s", field)
                     break
         logger.debug("Beets search query: %s", search_list)
-        tracks = self.remote.get_tracks_by(search_list, exact, [])
+        tracks = self.remote.get_tracks_by(
+            search_list,
+            exact_text=exact,
+            sort_fields=[],
+        )
         uri = "-".join(
             [
                 item if isinstance(item, str) else "=".join(map(str, item))
                 for item in search_list
             ]
         )
-        return SearchResult(uri="beets:search-" + uri, tracks=tracks)
+        return SearchResult(
+            uri=Uri(f"beets:search-{uri}"),
+            tracks=tuple(tracks),
+        )
 
-    def lookup(self, uri=None, uris=None):
-        logger.debug("Beets lookup: %s", uri or uris)
-        if uri:
-            # the older method (mopidy < 1.0): return a list of tracks
-            # handle one or more tracks given with multiple semicolons
-            logger.debug("Beets lookup: %s", uri)
-            path, item_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
-            if path == "track":
-                tracks = [self.remote.get_track(item_id)]
-            elif path == "album":
-                tracks = self.remote.get_tracks_by(
-                    [("album_id", item_id)],
-                    True,  # noqa: FBT003
-                    ("disc+", "track+"),
-                )
-            elif path == "artist":
-                artist_tracks = self.remote.get_tracks_by(
-                    [("artist", item_id)],
-                    True,  # noqa: FBT003
-                    [],
-                )
-                composer_tracks = self.remote.get_tracks_by(
-                    [("composer", item_id)],
-                    True,  # noqa: FBT003
-                    [],
-                )
-                # Append composer tracks to the artist tracks (unique items).
-                tracks = list(set(artist_tracks + composer_tracks))
-                tracks.sort(
-                    key=lambda t: (t.date or 0, t.disc_no or 0, t.track_no or 0)
-                )
-            else:
-                logger.info("Unknown Beets lookup URI: %s", uri)
-                tracks = []
-            # remove occourences of None
-            return [track for track in tracks if track]
-        # the newer method (mopidy>=1.0): return a dict of uris and tracks
-        return {uri: self.lookup(uri=uri) for uri in uris}
+    @override
+    def lookup(self, uri: Uri) -> list[Track]:
+        logger.debug("Beets lookup: %s", uri)
+        assert self.root_directory  # noqa: S101
+        path, item_id = parse_uri(uri, uri_prefix=self.root_directory.uri)
+        if item_id is None:
+            logger.info(f"Unknown item ID in Beets lookup URI: {uri}")
+            return []
+        if path == "track":
+            tracks = [self.remote.get_track(item_id)]
+        elif path == "album":
+            tracks = self.remote.get_tracks_by(
+                [("album_id", item_id)],
+                exact_text=True,
+                sort_fields=("disc+", "track+"),
+            )
+        elif path == "artist":
+            artist_tracks = self.remote.get_tracks_by(
+                [("artist", item_id)],
+                exact_text=True,
+                sort_fields=[],
+            )
+            composer_tracks = self.remote.get_tracks_by(
+                [("composer", item_id)],
+                exact_text=True,
+                sort_fields=[],
+            )
+            # Append composer tracks to the artist tracks (unique items).
+            tracks = list(set(artist_tracks + composer_tracks))
+            tracks.sort(key=lambda t: (t.date or 0, t.disc_no or 0, t.track_no or 0))
+        else:
+            logger.info("Unknown Beets lookup URI: %s", uri)
+            tracks = []
+        # remove occourences of None
+        return [t for t in tracks if t]
 
-    def get_distinct(self, field, query=None):
+    @override
+    def get_distinct(
+        self,
+        field: DistinctField,
+        query: Query[SearchField] | None = None,
+    ) -> set[str]:
         logger.debug("Beets distinct query: %s (uri=%s)", field, query)
         return self.remote.get_sorted_unique_track_attributes(field)
 

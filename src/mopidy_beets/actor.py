@@ -1,9 +1,9 @@
 import logging
-from typing import ClassVar
+from typing import ClassVar, override
 
 import pykka
 from mopidy import backend
-from mopidy.types import UriScheme
+from mopidy.types import Uri, UriScheme
 
 from .client import BeetsRemoteClient
 from .library import BeetsLibraryProvider
@@ -30,7 +30,8 @@ class BeetsBackend(pykka.ThreadingActor, backend.Backend):
 class BeetsPlaybackProvider(backend.PlaybackProvider):
     backend: BeetsBackend
 
-    def translate_uri(self, uri):
+    @override
+    def translate_uri(self, uri: Uri) -> Uri | None:
         track_id = uri.split(";")[1]
         logger.debug(f"Getting info for track {uri} with id {track_id}")
         return self.backend.beets_api.get_track_stream_url(track_id)

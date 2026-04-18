@@ -1,36 +1,43 @@
+from __future__ import annotations
+
 import logging
 import re
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 from http import HTTPStatus
+from typing import TYPE_CHECKING, Any
 
 import requests
 from mopidy import httpclient
+from mopidy.models import Album, Track
+from mopidy.types import DistinctField, Uri
 from requests.exceptions import RequestException
 
 import mopidy_beets
 from mopidy_beets.translator import parse_album, parse_track
 
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
+
 logger = logging.getLogger(__name__)
 
 
 class cache:  # noqa: N801
-    # TODO: merge this to util library
-
-    def __init__(self, ctl=8, ttl=3600):
-        self.cache = {}
+    def __init__(self, ctl: int = 8, ttl: int = 3600) -> None:
+        self.cache: dict[tuple[Any, ...], tuple[Any, float]] = {}
         self.ctl = ctl
         self.ttl = ttl
         self._call_count = 1
+        self.func: Callable[..., Any] | None = None
 
-    def __call__(self, func):
-        def _memoized(*args):
+    def __call__[**P, R](self, func: Callable[P, R]) -> Callable[P, R]:
+        def _memoized(*args: P.args, **kwargs: P.kwargs) -> R:
             self.func = func
+            key = (args, tuple(sorted(kwargs.items())))
             now = time.time()
             try:
-                value, last_update = self.cache[args]
+                value, last_update = self.cache[key]
                 age = now - last_update
                 if self._call_count >= self.ctl or age > self.ttl:
                     self._call_count = 1
@@ -39,12 +46,12 @@ class cache:  # noqa: N801
                 self._call_count += 1
 
             except (KeyError, AttributeError):
-                value = self.func(*args)
-                self.cache[args] = (value, now)
+                value = func(*args, **kwargs)
+                self.cache[key] = (value, now)
                 return value
 
             except TypeError:
-                return self.func(*args)
+                return func(*args, **kwargs)
 
             else:
                 return value
@@ -53,51 +60,86 @@ class cache:  # noqa: N801
 
 
 class BeetsRemoteClient:
-    def __init__(self, endpoint, proxy_config, request_timeout=4):
+    def __init__(
+        self,
+        endpoint,
+        proxy_config,
+        request_timeout: int = 4,
+    ) -> None:
         super().__init__()
         self._request_timeout = request_timeout
         self.api = self._get_session(proxy_config)
         self.api_endpoint = endpoint
         logger.info("Configured for Beets remote library %s", endpoint)
 
-    def _get_session(self, proxy_config):
-        proxy = httpclient.format_proxy(proxy_config)
-        full_user_agent = httpclient.format_user_agent(
-            f"{mopidy_beets.Extension.dist_name}/{mopidy_beets.__version__}"
-        )
+    def _get_session(self, proxy_config) -> requests.Session:
         session = requests.Session()
-        session.proxies.update({"http": proxy, "https": proxy})
-        session.headers.update({"user-agent": full_user_agent})
+        session.headers["user-agent"] = httpclient.format_user_agent(
+            f"{mopidy_beets.Extension.dist_name}/{mopidy_beets.Extension.version}"
+        )
+        if proxy := httpclient.format_proxy(proxy_config):
+            session.proxies.update({"http": proxy, "https": proxy})  # pyright: ignore[reportCallIssue]
         return session
 
     @cache()
-    def get_tracks(self):
-        track_ids = self._get("/item/").get("item_ids") or []
-        return [self.get_track(track_id) for track_id in track_ids]
+    def get_tracks(self) -> list[Track]:
+        if (result := self._get("/item/")) is None:
+            return []
+        track_ids = result.get("item_ids") or []
+        return [track for track_id in track_ids if (track := self.get_track(track_id))]
 
     @cache(ctl=16)
-    def get_track(self, track_id):
-        return parse_track(self._get(f"/item/{track_id}"), self)
+    def get_track(self, track_id: str | int) -> Track | None:
+        if (result := self._get(f"/item/{track_id}")) is None:
+            return None
+        return parse_track(result, self)
 
     @cache(ctl=16)
-    def get_album(self, album_id):
-        return parse_album(self._get(f"/album/{album_id}"), self)
+    def get_album(self, album_id: str | int) -> Album | None:
+        if (result := self._get(f"/album/{album_id}")) is None:
+            return None
+        return parse_album(result, self)
 
     @cache()
-    def get_tracks_by(self, attributes, exact_text, sort_fields):
+    def get_tracks_by(
+        self,
+        attributes: list[tuple[str, str | int]],
+        *,
+        exact_text: bool,
+        sort_fields: Iterable[str],
+    ) -> list[Track]:
         tracks = self._get_objects_by_attribute(
-            "/item", attributes, exact_text, sort_fields
+            "/item",
+            attributes,
+            exact_text=exact_text,
+            sort_fields=sort_fields,
         )
         return self._parse_multiple_tracks(tracks)
 
     @cache()
-    def get_albums_by(self, attributes, exact_text, sort_fields):
+    def get_albums_by(
+        self,
+        attributes: list[tuple[str, str | int]],
+        *,
+        exact_text: bool,
+        sort_fields: Iterable[str],
+    ) -> list[Album]:
         albums = self._get_objects_by_attribute(
-            "/album", attributes, exact_text, sort_fields
+            "/album",
+            attributes,
+            exact_text=exact_text,
+            sort_fields=sort_fields,
         )
         return self._parse_multiple_albums(albums)
 
-    def _get_objects_by_attribute(self, base_path, attributes, exact_text, sort_fields):  # noqa: C901
+    def _get_objects_by_attribute(  # noqa: C901, PLR0912
+        self,
+        base_path: str,
+        attributes: list[tuple[str, str | int]],
+        *,
+        exact_text: bool,
+        sort_fields: Iterable[str],
+    ) -> list[dict[str, Any]]:
         """The beets web-api accepts queries like:
             /item/query/album_id:183/track:2
             /item/query/album:Foo
@@ -111,9 +153,7 @@ class BeetsRemoteClient:
         @param exact_text: True for exact matches, False for
                            case-insensitive 'is in' matches (only relevant
                            for text values - not integers)
-        @type exact_text: bool
         @param sort_fields: fieldnames, each followed by '+' or '-'
-        @type sort_fields: list of strings
         @rtype: list of json datasets describing tracks or albums
         """
         # assemble the query string
@@ -161,8 +201,11 @@ class BeetsRemoteClient:
                 logger.info("Beets - invalid sorting field ignore: %s", sort_field)
         query_string = "/".join(query_parts)
         query_url = f"{base_path}/query/{query_string}"
+
         logger.debug("Beets query: %s", query_url)
-        items = self._get(query_url)["results"]
+        if (result := self._get(query_url)) is None:
+            return []
+        items = result["results"]
         if exact_text:
             # verify that text attributes do not just test 'is in', but match
             # equality
@@ -178,16 +221,15 @@ class BeetsRemoteClient:
     @cache()
     def get_artists(self):
         """returns all artists of one or more tracks"""
-        names = self._get("/artist/")["artist_names"]
-        names.sort()
-        # remove empty names
-        return [name for name in names if name]
+        if (result := self._get("/artist/")) is None:
+            return []
+        return [name for name in sorted(result["artist_names"]) if name]
 
-    def get_sorted_unique_track_attributes(self, field):
+    def get_sorted_unique_track_attributes(self, field: DistinctField) -> set[str]:
         sort_field = {"albumartist": "albumartist_sort"}.get(field, field)
         return self._get_unique_attribute_values("/item", field, sort_field)
 
-    def get_sorted_unique_album_attributes(self, field):
+    def get_sorted_unique_album_attributes(self, field: str) -> set[str]:
         # Modern Beets exposes the multi-valued "genres" on albums (singular
         # "genre" was removed after the 2.x series); fall through to the
         # plural key so both /album/values/... and the legacy fallback work.
@@ -196,45 +238,19 @@ class BeetsRemoteClient:
         return self._get_unique_attribute_values("/album", field, sort_field)
 
     @cache(ctl=32)
-    def _get_unique_attribute_values(self, base_url, field, sort_field):
-        """returns all artists, genres, ... of tracks or albums"""
-        if not hasattr(self, "__legacy_beets_api_detected"):
-            try:
-                result = self._get(
-                    f"{base_url}/values/{field}?sort_key={sort_field}",
-                    raise_not_found=True,
-                )
-            except KeyError:
-                # The above URL was added to the Beets API after v1.3.17
-                # Probably we are working against an older version.
-                logger.warning(
-                    "Failed to use the /item/unique/KEY feature of the Beets "
-                    "API (introduced in v1.3.18). Falling back to the "
-                    "slower and more resource intensive manual approach. "
-                    "Please upgrade Beets, if possible."
-                )
-                # Warn only once and use the manual approach for all future
-                # requests.
-                self.__legacy_beets_api_detected = True
-                # continue below with the fallback
-            else:
-                return result["values"]
-        # Fallback: use manual filtering (requires too much time and memory for
-        # most collections).
-        sorted_items = self._get(f"{base_url}/query/{sort_field}+")["results"]
-        # extract the wanted field and remove all duplicates
-        unique_values = []
-        for item in sorted_items:
-            value = item[field]
-            if not unique_values or (value != unique_values[-1]):
-                unique_values.append(value)
-        return unique_values
+    def _get_unique_attribute_values(self, base_url, field, sort_field) -> set[str]:
+        """Returns all artists, genres, ... of tracks or albums"""
+        result = self._get(
+            f"{base_url}/values/{field}?sort_key={sort_field}",
+            raise_not_found=True,
+        )
+        return set(result["values"]) if result else set()
 
-    def get_track_stream_url(self, track_id):
-        return f"{self.api_endpoint}/item/{track_id}/file"
+    def get_track_stream_url(self, track_id: str) -> Uri:
+        return Uri(f"{self.api_endpoint}/item/{track_id}/file")
 
     @cache(ctl=32)
-    def get_album_art_url(self, album_id):
+    def get_album_art_url(self, album_id: str) -> Uri | None:
         # Sadly we cannot determine, if the Beets library really contains album
         # art. Thus we need to ask for it and check the status code.
         url = f"{self.api_endpoint}/album/{album_id}/art"
@@ -244,9 +260,9 @@ class BeetsRemoteClient:
             # DNS problem or similar
             return None
         request.close()
-        return url if request.getcode() == HTTPStatus.OK else None
+        return Uri(url) if request.getcode() == HTTPStatus.OK else None
 
-    def _get(self, url, *, raise_not_found=False):
+    def _get(self, url, *, raise_not_found=False) -> dict[str, Any] | None:
         url = self.api_endpoint + url
         logger.debug(f"Beets - requesting {url}")
         try:
@@ -267,20 +283,22 @@ class BeetsRemoteClient:
             return None
         return req.json()
 
-    def _parse_multiple_albums(self, album_datasets):
-        albums = []
+    def _parse_multiple_albums(self, album_datasets) -> list[Album]:
+        albums = list[Album]()
         for dataset in album_datasets or []:
             try:
-                albums.append(parse_album(dataset, self))
+                if album := parse_album(dataset, self):
+                    albums.append(album)
             except (ValueError, KeyError) as exc:
                 logger.info(f"Beets - Failed to parse album data: {exc}")
         return [album for album in albums if album]
 
-    def _parse_multiple_tracks(self, track_datasets):
-        tracks = []
+    def _parse_multiple_tracks(self, track_datasets) -> list[Track]:
+        tracks = list[Track]()
         for dataset in track_datasets or []:
             try:
-                tracks.append(parse_track(dataset, self))
+                if track := parse_track(dataset, self):
+                    tracks.append(track)
             except (ValueError, KeyError) as exc:
                 logger.info(f"Beets - Failed to parse track data: {exc}")
         return [track for track in tracks if track]
