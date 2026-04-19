@@ -127,7 +127,12 @@ class BeetsAPILibraryTest(MopidyBeetsTest):
                         args[key] = fallback_value
                 new_item = self.beets.add_item_fixture(**args)
                 album_items.append(new_item)
-            self.beets.lib.add_album(album_items)
+            beets_album = self.beets.lib.add_album(album_items)
+            if album.genre:
+                # Modern Beets tracks genres on albums as a multi-valued list;
+                # populate it so browsing by genre finds the album.
+                beets_album["genres"] = [album.genre]
+                beets_album.store()
 
     def tearDown(self):
         self.beets.stop()

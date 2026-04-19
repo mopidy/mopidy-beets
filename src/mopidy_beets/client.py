@@ -188,6 +188,10 @@ class BeetsRemoteClient:
         return self._get_unique_attribute_values("/item", field, sort_field)
 
     def get_sorted_unique_album_attributes(self, field):
+        # Modern Beets exposes the multi-valued "genres" on albums (singular
+        # "genre" was removed after the 2.x series); fall through to the
+        # plural key so both /album/values/... and the legacy fallback work.
+        field = {"genre": "genres"}.get(field, field)
         sort_field = {"albumartist": "albumartist_sort"}.get(field, field)
         return self._get_unique_attribute_values("/album", field, sort_field)
 
