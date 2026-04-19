@@ -20,11 +20,17 @@ from mopidy_beets.translator import parse_album, parse_track
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
 
+    from mopidy.config import ProxyConfig
+
 logger = logging.getLogger(__name__)
 
 
 class cache:  # noqa: N801
-    def __init__(self, ctl: int = 8, ttl: int = 3600) -> None:
+    def __init__(
+        self,
+        ctl: int = 8,
+        ttl: int = 3600,
+    ) -> None:
         self.cache: dict[tuple[Any, ...], tuple[Any, float]] = {}
         self.ctl = ctl
         self.ttl = ttl
@@ -62,8 +68,8 @@ class cache:  # noqa: N801
 class BeetsRemoteClient:
     def __init__(
         self,
-        endpoint,
-        proxy_config,
+        endpoint: str,
+        proxy_config: ProxyConfig,
         request_timeout: int = 4,
     ) -> None:
         super().__init__()
@@ -72,7 +78,7 @@ class BeetsRemoteClient:
         self.api_endpoint = endpoint
         logger.info("Configured for Beets remote library %s", endpoint)
 
-    def _get_session(self, proxy_config) -> requests.Session:
+    def _get_session(self, proxy_config: ProxyConfig) -> requests.Session:
         session = requests.Session()
         session.headers["user-agent"] = httpclient.format_user_agent(
             f"{mopidy_beets.Extension.dist_name}/{mopidy_beets.Extension.version}"
@@ -161,7 +167,7 @@ class BeetsRemoteClient:
         # only used for 'exact_text'
         exact_query_list = []
 
-        def quote_and_encode(text):
+        def quote_and_encode(text: str | float) -> str:
             if isinstance(text, (int, float)):
                 text = str(text)
             # Escape colons. The beets web API uses the colon to separate
@@ -219,7 +225,7 @@ class BeetsRemoteClient:
         return items
 
     @cache()
-    def get_artists(self):
+    def get_artists(self) -> list[str]:
         """returns all artists of one or more tracks"""
         if (result := self._get("/artist/")) is None:
             return []
@@ -238,7 +244,12 @@ class BeetsRemoteClient:
         return self._get_unique_attribute_values("/album", field, sort_field)
 
     @cache(ctl=32)
-    def _get_unique_attribute_values(self, base_url, field, sort_field) -> set[str]:
+    def _get_unique_attribute_values(
+        self,
+        base_url: str,
+        field: str,
+        sort_field: str,
+    ) -> set[str]:
         """Returns all artists, genres, ... of tracks or albums"""
         result = self._get(
             f"{base_url}/values/{field}?sort_key={sort_field}",
@@ -262,7 +273,7 @@ class BeetsRemoteClient:
         request.close()
         return Uri(url) if request.getcode() == HTTPStatus.OK else None
 
-    def _get(self, url, *, raise_not_found=False) -> dict[str, Any] | None:
+    def _get(self, url: str, *, raise_not_found: bool = False) -> dict[str, Any] | None:
         url = self.api_endpoint + url
         logger.debug(f"Beets - requesting {url}")
         try:
@@ -283,7 +294,10 @@ class BeetsRemoteClient:
             return None
         return req.json()
 
-    def _parse_multiple_albums(self, album_datasets) -> list[Album]:
+    def _parse_multiple_albums(
+        self,
+        album_datasets: Iterable[dict[str, Any]] | None,
+    ) -> list[Album]:
         albums = list[Album]()
         for dataset in album_datasets or []:
             try:
@@ -293,7 +307,10 @@ class BeetsRemoteClient:
                 logger.info(f"Beets - Failed to parse album data: {exc}")
         return [album for album in albums if album]
 
-    def _parse_multiple_tracks(self, track_datasets) -> list[Track]:
+    def _parse_multiple_tracks(
+        self,
+        track_datasets: Iterable[dict[str, Any]] | None,
+    ) -> list[Track]:
         tracks = list[Track]()
         for dataset in track_datasets or []:
             try:

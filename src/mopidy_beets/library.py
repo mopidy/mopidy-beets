@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import TYPE_CHECKING, ClassVar, override
+from typing import TYPE_CHECKING, Any, ClassVar, override
 
 from mopidy import backend
 from mopidy.models import Ref, SearchResult, Track
@@ -44,7 +44,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
     remote: BeetsRemoteClient
 
     @override
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         assert self.root_directory  # noqa: S101
         self.remote = self.backend.beets_api
@@ -210,7 +210,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
         logger.debug("Beets distinct query: %s (uri=%s)", field, query)
         return self.remote.get_sorted_unique_track_attributes(field)
 
-    def _validate_query(self, query):
+    def _validate_query(self, query: Query[SearchField]) -> None:
         for values in query.values():
             if not values:
                 msg = "Missing query"

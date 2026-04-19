@@ -22,7 +22,7 @@ class AlbumsCategoryBrowser(GenericBrowserBase):
             for k in sorted(keys)
         ]
 
-    def get_directory(self, key) -> list[Ref]:
+    def get_directory(self, key: str) -> list[Ref]:
         albums = self.api.get_albums_by(
             [(self.field, key)],
             exact_text=True,
