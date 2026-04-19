@@ -11,16 +11,16 @@ class Extension(ext.Extension):
     ext_name = "beets"
     version = __version__
 
-    def get_default_config(self):
+    def get_default_config(self) -> str:
         return config.read(pathlib.Path(__file__).parent / "ext.conf")
 
-    def get_config_schema(self):
+    def get_config_schema(self) -> config.ConfigSchema:
         schema = super().get_config_schema()
         schema["hostname"] = config.Hostname()
         schema["port"] = config.Port()
         return schema
 
-    def setup(self, registry):
+    def setup(self, registry: ext.Registry) -> None:
         from mopidy_beets.actor import BeetsBackend  # noqa: PLC0415
 
         registry.add("backend", BeetsBackend)

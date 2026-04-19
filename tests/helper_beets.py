@@ -72,6 +72,7 @@ class BeetsLibrary(BeetsPluginMixin, BeetsTestHelper):
             self._server.shutdown()
             self._server_thread.join()
             self._server_thread = None
+        self.teardown_beets()
 
     def get_connection_pair(self):
         return (self._bind_host, self._bind_port)

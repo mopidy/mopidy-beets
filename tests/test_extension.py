@@ -33,7 +33,10 @@ class ExtensionTest(MopidyBeetsTest):
         assert mock.call("backend", BeetsBackend) in registry.add.mock_calls
 
     def test_init_backend(self):
-        backend = BeetsBackend(self.get_config(), None)
+        backend = BeetsBackend(
+            config=self.get_config(),
+            audio=None,  # ty:ignore[invalid-argument-type]
+        )
         assert backend is not None
         backend.on_start()
         backend.on_stop()

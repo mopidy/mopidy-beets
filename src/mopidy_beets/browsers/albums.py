@@ -1,40 +1,52 @@
-from mopidy import models
+from __future__ import annotations
+
+from typing import ClassVar, override
+
+from mopidy.models import Album, Ref
 
 from mopidy_beets.browsers import GenericBrowserBase
 from mopidy_beets.translator import assemble_uri
 
 
 class AlbumsCategoryBrowser(GenericBrowserBase):
-    field = None
-    sort_fields = None
-    label_fields = None
+    field: ClassVar[str]
+    sort_fields: ClassVar[tuple[str, ...]]
 
-    def get_toplevel(self):
+    def get_toplevel(self) -> list[Ref]:
         keys = self.api.get_sorted_unique_album_attributes(self.field)
         return [
-            models.Ref.directory(
-                name=str(key), uri=assemble_uri(self.ref.uri, id_value=key)
+            Ref.directory(
+                name=str(k),
+                uri=assemble_uri(self.ref.uri, id_value=k),
             )
-            for key in keys
+            for k in sorted(keys)
         ]
 
-    def get_directory(self, key):
+    def get_directory(self, key: str) -> list[Ref]:
         albums = self.api.get_albums_by(
             [(self.field, key)],
-            True,  # noqa: FBT003
-            self.sort_fields,
+            exact_text=True,
+            sort_fields=self.sort_fields,
         )
         return [
-            models.Ref.album(uri=album.uri, name=self._get_label(album))
-            for album in albums
+            Ref.album(
+                uri=a.uri,
+                name=self._get_label(a),
+            )
+            for a in albums
+            if a.uri is not None
         ]
+
+    def _get_label(self, album: Album) -> str | None:
+        raise NotImplementedError
 
 
 class AlbumsByArtistBrowser(AlbumsCategoryBrowser):
     field = "albumartist"
     sort_fields = ("original_year+", "year+", "album+")
 
-    def _get_label(self, album):
+    @override
+    def _get_label(self, album: Album) -> str | None:
         return album.name
 
 
@@ -42,8 +54,9 @@ class AlbumsByGenreBrowser(AlbumsCategoryBrowser):
     field = "genre"
     sort_fields = ("albumartist", "original_year+", "year+", "album+")
 
-    def _get_label(self, album):
-        artists = " / ".join([artist.name for artist in album.artists])
+    @override
+    def _get_label(self, album: Album) -> str | None:
+        artists = " / ".join([a.name for a in album.artists if a.name is not None])
         if artists and album.date:
             return f"{artists} - {album.name} ({album.date.split('-')[0]})"
         if artists:
@@ -61,8 +74,9 @@ class AlbumsByYearBrowser(AlbumsCategoryBrowser):
         "album+",
     )
 
-    def _get_label(self, album):
-        artists = " / ".join([artist.name for artist in album.artists])
+    @override
+    def _get_label(self, album: Album) -> str | None:
+        artists = " / ".join([a.name for a in album.artists if a.name is not None])
         if artists:
             return f"{artists} - {album.name}"
         return album.name

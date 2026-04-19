@@ -14,7 +14,7 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "mopidy >= 4.0.0a7",
+    "mopidy >= 4.0.0rc2",
     "pykka >= 4.1",
     "requests >= 2.32",
 ]
@@ -86,16 +86,7 @@ target-version = "py313"
 select = ["ALL"]
 ignore = [
     # Add rules you want to ignore here
-    "ANN001", # missing-type-function-argument  # TODO
-    "ANN002", # missing-type-args  # TODO
-    "ANN003", # missing-type-kwargs  # TODO
-    "ANN201", # missing-return-type-undocumented-public-function  # TODO
-    "ANN202", # missing-return-type-private-function  # TODO
-    "ANN204", # missing-return-type-special-method  # TODO
-    "ANN205", # missing-return-type-static-method  # TODO
     "D",      # pydocstyle
-    "D203",   # one-blank-line-before-class
-    "D213",   # multi-line-summary-second-line
     "FIX002", # line-contains-todo  # TODO
     "G004",   # logging-f-string
     "TD002",  # missing-todo-author
@@ -108,6 +99,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
+    "ANN",  # flake8-annotations
     "ARG",  # flake8-unused-arguments
     "D",    # pydocstyle
     "S101", # assert

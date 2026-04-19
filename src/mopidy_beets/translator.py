@@ -1,23 +1,30 @@
+from __future__ import annotations
+
 import logging
-import urllib.error
 import urllib.parse
-import urllib.request
+from typing import TYPE_CHECKING, Any
 
 from mopidy.models import Album, Artist, Track
+from mopidy.types import Uri
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from mopidy_beets.client import BeetsRemoteClient
 
 logger = logging.getLogger(__name__)
 
 
-def parse_date(data):
+def parse_date(data: dict[str, Any]) -> str | None:
     # use 'original' dates if possible
     if "original_year" in data:
-        day = data.get("original_day", None)
-        month = data.get("original_month", None)
-        year = data.get("original_year", None)
+        day = data.get("original_day")
+        month = data.get("original_month")
+        year = data.get("original_year")
     elif "year" in data:
-        day = data.get("day", None)
-        month = data.get("month", None)
-        year = data.get("year", None)
+        day = data.get("day")
+        month = data.get("month")
+        year = data.get("year")
     else:
         return None
     # mopidy accepts dates as 'YYYY' or 'YYYY-MM-DD'
@@ -26,7 +33,11 @@ def parse_date(data):
     return f"{year:04d}"
 
 
-def _apply_beets_mapping(target_class, mapping, data):
+def _apply_beets_mapping[T](
+    target_class: type[T],
+    mapping: dict[str, str],
+    data: dict[str, Any],
+) -> T | None:
     """evaluate a mapping of target keys and their source keys or callables
 
     'target_class' is the Mopidy model to be used for creating the item.
@@ -35,25 +46,25 @@ def _apply_beets_mapping(target_class, mapping, data):
         * string: the key for the corresponding value in 'data'
         * callable: a function with a dict ('data') as its only parameter
     """
-    kwargs = {}
+    kwargs: dict[str, Any] = {}
     for key, map_value in mapping.items():
         if map_value is None:
             value = None
         elif callable(map_value):
             value = map_value(data)
         else:
-            value = data.get(map_value, None)
+            value = data.get(map_value)
         # ignore None, empty strings or zeros (e.g. for length)
         if value:
             kwargs[key] = value
     return target_class(**kwargs) if kwargs else None
 
 
-def _filter_none(values):
+def _filter_none[T](values: Iterable[T | None]) -> list[T]:
     return [value for value in values if value is not None]
 
 
-def parse_artist(data, name_keyword):
+def parse_artist(data: dict[str, Any], name_keyword: str) -> Artist | None:
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Artist
     mapping = {
         "uri": lambda d: assemble_uri("beets:library:artist", id_value=d[name_keyword]),
@@ -71,7 +82,7 @@ def parse_artist(data, name_keyword):
     return _apply_beets_mapping(Artist, mapping, data)
 
 
-def parse_album(data, _api):
+def parse_album(data: dict[str, Any], _api: BeetsRemoteClient) -> Album | None:
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Album
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
@@ -87,7 +98,7 @@ def parse_album(data, _api):
     return _apply_beets_mapping(Album, mapping, data)
 
 
-def parse_track(data, api):
+def parse_track(data: dict[str, Any], api: BeetsRemoteClient) -> Track | None:
     # see https://docs.mopidy.com/en/latest/api/models/#mopidy.models.Track
     # The order of items is based on the above documentation.
     # Attributes without corresponding Beets data are mapped to 'None'.
@@ -113,8 +124,11 @@ def parse_track(data, api):
     return _apply_beets_mapping(Track, mapping, data)
 
 
-def parse_uri(uri, uri_prefix=None):
-    """split a URI into an optional prefix and a value
+def parse_uri(
+    uri: Uri,
+    uri_prefix: str | None = None,
+) -> tuple[str | None, str | int | None]:
+    """Split a URI into an optional prefix and a value.
 
     The format of a uri is similar to this:
         beets:library:album;Foo%20Bar
@@ -123,7 +137,7 @@ def parse_uri(uri, uri_prefix=None):
     uri_prefix (optional):
         * remove the string from the beginning of uri
         * the match is valid only if the prefix is separated from the
-          remainder of the URI with a color, an ampersand or it is equal
+          remainder of the URI with a colon, an ampersand or it is equal
           to the full URI
         * the function returns 'None' if the uri_prefix cannot be removed
           (you should consider this an error condition)
@@ -159,13 +173,12 @@ def parse_uri(uri, uri_prefix=None):
     return result_uri, id_value
 
 
-def assemble_uri(*args, **kwargs):
+def assemble_uri(*args: str, id_value: str | None = None) -> Uri:
     base_path = ":".join(args)
-    id_value = kwargs.pop("id_value", None)
     if id_value is None:
-        return base_path
+        return Uri(base_path)
     # convert numbers and other non-strings
     if not isinstance(id_value, str):
         id_value = str(id_value)
     id_string = urllib.parse.quote(id_value)
-    return f"{base_path};{id_string}"
+    return Uri(f"{base_path};{id_string}")
