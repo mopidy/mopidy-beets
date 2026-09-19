@@ -40,8 +40,8 @@ dev = [
 ]
 ruff = ["ruff"]
 tests = [
-    # We need the `beets.test` module, which is not part of a release, yet (2024-01)
-    "beets@git+https://github.com/beetbox/beets.git@master",
+    # Beets 2.13 is the first release where `beets.test._common.RSRC` is a path.
+    "beets >= 2.13",
     "flask",
     "pytest",
     "pytest-cov",
