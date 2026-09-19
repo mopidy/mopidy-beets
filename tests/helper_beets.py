@@ -8,7 +8,6 @@ import beets.test._common
 import werkzeug.serving
 from beets.test.helper import PluginMixin as BeetsPluginMixin
 from beets.test.helper import TestHelper as BeetsTestHelper
-from beets.util import bytestring_path
 from beetsplug.web import app as beets_web_app
 
 from . import TEST_DATA_DIRECTORY, MopidyBeetsTest
@@ -29,7 +28,7 @@ class BeetsAlbum(NamedTuple):
 
 
 # Manipulate beets's ressource path before any action wants to access these files.
-beets.test._common.RSRC = bytestring_path(TEST_DATA_DIRECTORY / "beets-rsrc")  # noqa: SLF001
+beets.test._common.RSRC = TEST_DATA_DIRECTORY / "beets-rsrc"  # noqa: SLF001
 
 
 class BeetsLibrary(BeetsPluginMixin, BeetsTestHelper):
