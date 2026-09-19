@@ -86,6 +86,7 @@ target-version = "py313"
 select = ["ALL"]
 ignore = [
     # Add rules you want to ignore here
+    "CPY",    # flake8-copyright
     "D",      # pydocstyle
     "FIX002", # line-contains-todo  # TODO
     "G004",   # logging-f-string
