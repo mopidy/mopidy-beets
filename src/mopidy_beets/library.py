@@ -16,6 +16,8 @@ from mopidy_beets.browsers.albums import (
 from mopidy_beets.translator import assemble_uri, parse_uri
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from mopidy_beets.actor import BeetsBackend
     from mopidy_beets.browsers import GenericBrowserBase
     from mopidy_beets.client import BeetsRemoteClient
@@ -101,7 +103,7 @@ class BeetsLibraryProvider(backend.LibraryProvider):
     def search(  # noqa: C901, PLR0912
         self,
         query: Query[SearchField],
-        uris: list[Uri] | None = None,
+        uris: Iterable[Uri] | None = None,
         exact: bool = False,
     ) -> SearchResult:
         # TODO: restrict the result to 'uris'
