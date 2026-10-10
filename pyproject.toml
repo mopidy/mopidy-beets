@@ -43,11 +43,11 @@ ruff = ["ruff"]
 tests = [
     # Beets 2.13 is the first release where `beets.test._common.RSRC` is a path.
     "beets >= 2.13",
-    "flask",
+    "flask >= 3.1",
     "pytest >= 8.3",
     "pytest-cov >= 5.0",
-    "responses",
-    "werkzeug",
+    "responses >= 0.25",
+    "werkzeug >= 3.1",
 ]
 typing = ["pyright"]
 
