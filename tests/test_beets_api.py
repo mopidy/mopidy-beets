@@ -57,3 +57,11 @@ class LookupTest(BeetsAPILibraryTest):
         expected_album_genres = sorted(str(album.year) for album in self.BEETS_ALBUMS)
         received_album_genres = [item.name for item in response]
         assert received_album_genres == expected_album_genres
+
+    def test_distinct_track_name_returns_titles(self):
+        # Mopidy 4.x gives the track name field to backends as "track", and
+        # Mopidy 5.0 gives it as "track_name".
+        for field in ("track", "track_name"):
+            with self.subTest(field=field):
+                result = self.backend.library.get_distinct(field)
+                assert result == {"Title-1", "Title-2", "Title-3"}
