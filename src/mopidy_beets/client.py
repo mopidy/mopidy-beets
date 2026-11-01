@@ -232,8 +232,15 @@ class BeetsRemoteClient:
         return [name for name in sorted(result["artist_names"]) if name]
 
     def get_sorted_unique_track_attributes(self, field: DistinctField) -> set[str]:
-        sort_field = {"albumartist": "albumartist_sort"}.get(field, field)
-        return self._get_unique_attribute_values("/item", field, sort_field)
+        beets_field = {
+            # Mopidy 4.x gives the track name as "track". In Beets, "track" is
+            # the track number.
+            "track": "title",
+            # Mopidy 5.0 gives the track name as "track_name".
+            "track_name": "title",
+        }.get(field, field)
+        sort_field = {"albumartist": "albumartist_sort"}.get(beets_field, beets_field)
+        return self._get_unique_attribute_values("/item", beets_field, sort_field)
 
     def get_sorted_unique_album_attributes(self, field: str) -> set[str]:
         # Modern Beets exposes the multi-valued "genres" on albums (singular
